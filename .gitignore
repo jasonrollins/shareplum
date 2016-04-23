@@ -1,0 +1,11 @@
+*.pyc
+*.pyo
+*.db
+*.log
+*.mo
+._*
+*.*~
+dist/
+build/
+shareplum.egg-info/
+docs/_build/
