@@ -23,6 +23,11 @@ Features
 - Automatic conversion between SharePoint internal names and displayed names.
 - Automatic conversion of data types.
 
+Documentation
+-------------
+
+`Read the Docs <http://shareplum.readthedocs.org/en/latest/>`_
+
 Contribute
 ----------
 

@@ -169,9 +169,9 @@ class Site(object):
         else:
             return response
         
-    def GetUsers(self, rowlimit=99999):
+    def GetUsers(self, rowlimit=0):
         """Get Items from current list
-           rowlimit defaulted to 99999
+           rowlimit defaulted to 0 (no limit)
         """
         
         # Build Request
@@ -326,9 +326,9 @@ class _List(object):
         except AttributeError:
             return value
 
-    def GetListItems(self, viewname=None, fields=None, query=None, rowlimit=99999):
+    def GetListItems(self, viewname=None, fields=None, query=None, rowlimit=0):
         """Get Items from current list
-           rowlimit defaulted to 99999
+           rowlimit defaulted to 0 (unlimited)
         """
         
         # Build Request
@@ -440,10 +440,7 @@ class _List(object):
             raise Exception("ERROR:", response.status_code, response.text)
             
     def GetView(self, viewname):
-        """Get Info on Current List
-           This is run in __init__ so you don't
-           have to run it again.
-           Access from self.schema
+        """Get Info on View Name
         """
         
         # Build Request
