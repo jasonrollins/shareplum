@@ -26,8 +26,8 @@ Features
 Contribute
 ----------
 
-- Issue Tracker: github.com/jasonrollins/shareplum/issues
-- Source Code: github.com/jasonrollins/shareplum
+- `Issue Tracker <http://github.com/jasonrollins/shareplum/issues>`_
+- `Source Code <http://github.com/jasonrollins/shareplum>`_
 
 License
 -------
