@@ -5,7 +5,11 @@ Installation is as easy as:
 ::
     $ pip install shareplum
 
-The source and also be downloaded from pypi.
+or install from source.
+::
+    $ git clone git://github.com/jasonrollins/shareplum
+    $ cd shareplum
+    $ python setup.py install
 
 Dependencies
 ------------

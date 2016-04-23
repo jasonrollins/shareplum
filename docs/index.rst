@@ -22,3 +22,4 @@ Example:
     install
     tutorial
     objects
+    changelog

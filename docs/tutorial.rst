@@ -1,7 +1,7 @@
 Tutorial
 ========
 
-Getting started is easy.  Just create some credentials you will use to connect to the SharePoint with HttpNtlmAuth and pass the url and credentials to the Site object.
+Getting started is easy.  Just create some credentials you will use to connect to SharePoint with HttpNtlmAuth and pass the url and credentials to the Site object.
 
 ::
     
@@ -61,5 +61,3 @@ You can update data in a SharePoint List easily as well.  You just need the ID n
     update_data = [{'ID': '1', 'Title': 'My Changed Title'},
                    {'ID': '2', 'Title': 'Another Change'}]
     new_list.UpdateListItems(data=update_data, kind='Update')
-
-
