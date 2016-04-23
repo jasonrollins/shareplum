@@ -2,8 +2,8 @@
 SharePlum
 ==========
 
-shareplum allows a more pythonic approach to reading
-from and wrting to SharePoint site contents.
+SharePlum allows a more pythonic approach to reading
+from and writing to SharePoint site contents.
 
 Usage:
 ::
