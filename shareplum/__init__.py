@@ -4,8 +4,8 @@
 # server using python
 
 __title__ = 'SharePlum SharePoint Library'
-__version__ = '0.1.1'
 __author__ = 'Jason Rollins'
 
 from .shareplum import *
 from .ListDict import *
+from .version import __version__

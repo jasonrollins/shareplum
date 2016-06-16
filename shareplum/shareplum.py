@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from __init__ import __version__
+from .version import __version__
 from lxml import etree
 import requests
 from datetime import datetime

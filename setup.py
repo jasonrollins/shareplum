@@ -7,7 +7,7 @@ except ImportError:
 
 from codecs import open
 
-with open('shareplum/__init__.py', 'r') as fd:
+with open('shareplum/version.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         fd.read(), re.MULTILINE).group(1)
 
@@ -23,6 +23,9 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
@@ -35,7 +38,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Office/Business',
     ],
-    keywords='Microsoft SharePoint SharePoint2010 SharePoint2013',
+    keywords=['SharePoint'],
     packages=['shareplum'],
     install_requires=['lxml', 'requests', 'requests-ntlm'],
 )
