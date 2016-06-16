@@ -1,3 +1,5 @@
+import re
+
 try:
     from setuptools import setup
 except ImportError:
@@ -5,9 +7,13 @@ except ImportError:
 
 from codecs import open
 
+with open('shareplum/__init__.py', 'r') as fd:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+                        fd.read(), re.MULTILINE).group(1)
+
 setup(
     name='SharePlum',
-    version='0.1.0',
+    version=version,
     description='Python SharePoint Library',
     long_description=open('README.rst').read(),
     url='https://github.com/jasonrollins/shareplum',

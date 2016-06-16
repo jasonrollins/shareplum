@@ -1,6 +1,9 @@
+from __future__ import unicode_literals
+from __init__ import __version__
 from lxml import etree
 import requests
 from datetime import datetime
+import re
 
 class Site(object):
     """Connect to SharePoint Site
@@ -11,7 +14,8 @@ class Site(object):
         self._verify_ssl = verify_ssl
         
         self._session = requests.Session()
-        
+        self._session.headers.update({'user-agent':
+                                      'shareplum/%s' % __version__ })
 
         if auth:
             self._session.auth = auth
