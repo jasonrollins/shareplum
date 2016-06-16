@@ -4,6 +4,7 @@
 *.db
 *.log
 *.mo
+*.bat
 ._*
 *.*~
 dist/
