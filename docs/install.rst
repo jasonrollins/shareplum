@@ -1,18 +1,19 @@
+==========
 Installing
 ==========
 
-Installation is as easy as:::
+Installation is as easy as::
 
     $ pip install shareplum
 
-or install from source.::
+or install from source. ::
 
     $ git clone git://github.com/jasonrollins/shareplum
     $ cd shareplum
     $ python setup.py install
 
 Dependencies
-------------
+============
 
 SharePlum requires the following packages:
 

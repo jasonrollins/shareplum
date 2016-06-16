@@ -1,8 +1,9 @@
+===================
 Classes and Methods
 ===================
 
 Site
-----
+====
 The main object of the SharePlum library is Site.
 
 .. py:class:: Site(url [, auth=None, verify_ssl=True])
@@ -10,7 +11,7 @@ The main object of the SharePlum library is Site.
     Main Site object used to interact with your SharePoint site.
 
 Methods
-^^^^^^^
+-------
 
 .. py:function:: AddList(listName, description, templateID)
 
@@ -49,12 +50,12 @@ Methods
     Returns a List object for the list with 'listName' on the current Site.
 
 List
-----
+====
 
 The List object contains methods for interacting with SharePoint Lists.  Created with Site.List().
 
 Methods
-^^^^^^^
+-------
 
 .. py:function:: GetListItems([viewname=None, fields=None, query=None, rowlimit=0])
 
@@ -98,6 +99,6 @@ Methods
     Get a list of attachements for the row with the provided ID.
 
 soap
-----
+====
 
 Helper class to build our SOAP requests. You shouldn't have to use this directly.
