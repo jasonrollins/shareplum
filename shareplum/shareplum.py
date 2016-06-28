@@ -345,9 +345,13 @@ class _List(object):
         # Add viewFields
         if fields:
             # Convert to SharePoint Style Column Names
-            for i, val in enumerate(fields): 
-                fields[i] = self._disp_cols[val]['name']
-            viewfields = fields
+            if fields is True:
+                # Get all items when fields is True
+                viewfields = fields = [self._disp_cols[x]['name'] for x in self._disp_cols]
+            else:
+                for i, val in enumerate(fields):
+                    fields[i] = self._disp_cols[val]['name']
+                viewfields = fields
             soap_request.add_view_fields(fields)
             # Check for viewname and query
             if [viewname, query] == [None, None]:
