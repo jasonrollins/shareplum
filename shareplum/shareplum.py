@@ -5,15 +5,20 @@ import requests
 from datetime import datetime
 import re
 
+from requests_toolbelt import SSLAdapter
+
 class Site(object):
     """Connect to SharePoint Site
     """
 
-    def __init__(self, site_url, auth=None, verify_ssl=True):
+    def __init__(self, site_url, auth=None, verify_ssl=True, ssl_version=None):
         self.site_url = site_url
         self._verify_ssl = verify_ssl
         
         self._session = requests.Session()
+        if ssl_version is not None:
+            self._session.mount('https://', SSLAdapter(ssl_version))
+
         self._session.headers.update({'user-agent':
                                       'shareplum/%s' % __version__ })
 
