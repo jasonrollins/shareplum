@@ -31,7 +31,11 @@ Upload content to your list with the UpdateListItems method. ::
 Download Data
 =============
 
-Download the data from your list with GetListItems by specifiying a SharePoint View, ::
+Retrieve the data from a SharePoint list using GetListItems. ::
+
+    sp_data = new_list.GetListItems()
+
+Retrieve the data from your list by specifiying a SharePoint View, ::
 
     sp_data = new_list.GetListItems('All Items')
 
