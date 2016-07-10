@@ -21,7 +21,7 @@ Features
 
 - Reading and writing data to SharePoint lists using Python Dictionaries.
 - Automatic conversion between SharePoint internal names and displayed names.
-- Using Queries to filter date when retrieving List Items.
+- Using Queries to filter data when retrieving List Items.
 - Automatic conversion of data types.
 - Supports Users datatype
 
