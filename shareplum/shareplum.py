@@ -360,8 +360,11 @@ class _List(object):
                 # We sort by 'ID' here Ascending is the default
                 soap_request.add_query({'OrderBy': ['ID']})
                     
-        else:
+        elif viewname:
             viewfields = self.GetView(viewname)['fields']  ## Might be wrong
+        else:
+            # No fields or views provided so get everything
+            viewfields = [x for x in new_list._sp_cols]
             
         # Add query
         if query:
