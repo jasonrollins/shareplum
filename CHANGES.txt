@@ -1,1 +1,4 @@
-v0.1.0, 04/23/2016 -- Initial Release
+v0.1.0, 2016-04-23 -- Initial Release
+v0.1.1, 2016-06-16 -- Added Python 2.7 Support
+v0.1.2, Not Released- Added Support for changing SSL/TLS version
+                      Changed default list.GetListItems to pull all fields
