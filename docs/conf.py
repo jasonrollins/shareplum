@@ -270,7 +270,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'SharePlum', 'SharePlum Documentation',
-     author, 'SharePlum', 'One line description of project.',
+     author, 'SharePlum', 'Python Library for interacting with SharePoint sites',
      'Miscellaneous'),
 ]
 

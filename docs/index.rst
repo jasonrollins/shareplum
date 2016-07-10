@@ -20,5 +20,6 @@ Example::
     install
     tutorial
     queries
+    advanced
     objects
     changelog

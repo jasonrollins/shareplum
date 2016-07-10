@@ -20,3 +20,4 @@ SharePlum requires the following packages:
 * `lxml <https://pypi.python.org/pypi/lxml>`_
 * `requests <https://pypi.python.org/pypi/requests>`_
 * `requests-ntlm <https://pypi.python.org/pypi/requests_ntlm>`_
+* `requests-toolbelt <https://github.com/sigmavirus24/requests-toolbelt>`_
