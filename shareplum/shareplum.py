@@ -364,7 +364,7 @@ class _List(object):
             viewfields = self.GetView(viewname)['fields']  ## Might be wrong
         else:
             # No fields or views provided so get everything
-            viewfields = [x for x in new_list._sp_cols]
+            viewfields = [x for x in self._sp_cols]
             
         # Add query
         if query:
