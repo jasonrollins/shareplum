@@ -6,7 +6,7 @@ Site
 ====
 The main object of the SharePlum library is Site.
 
-.. py:class:: Site(url [, auth=None, verify_ssl=True])
+.. py:class:: Site(url [, auth=None, verify_ssl=True, ssl_version='TLSv1'])
 
     Main Site object used to interact with your SharePoint site.
 
@@ -45,7 +45,7 @@ Methods
 
     Returns information on the userbase of the current Site.
 
-.. py:function:: List(listNmae)
+.. py:function:: List(listName)
 
     Returns a List object for the list with 'listName' on the current Site.
 
