@@ -92,7 +92,7 @@ Methods
 
     When using kind='Delete' the data parameter becomes a list of IDs. eg.::
         
-        data = ['46, '201', '403', '456']
+        data = ['46', '201', '403', '456']
 
 .. py:function:: GetAttachmentCollection(_id)
 
