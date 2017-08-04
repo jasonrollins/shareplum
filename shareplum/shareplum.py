@@ -300,7 +300,7 @@ class _List(object):
                     return 'No'
                 else:
                     return ''
-            elif field_type == 'User':
+            elif field_type in ('User', 'UserMulti'):
                 # Sometimes the User no longer exists or
                 # has a diffrent ID number so we just remove the "123;#"
                 # from the beginning of their name
