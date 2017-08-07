@@ -25,7 +25,7 @@ Upload content to your list with the UpdateListItems method. ::
 
     new_list = site.List('My New List')
     my_data = data=[{'Title': 'First Row!'},
-                    {'Title': 'Another One!'}
+                    {'Title': 'Another One!'}]
     new_list.UpdateListItems(data=my_data, kind='New')
 
 Download Data
