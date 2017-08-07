@@ -11,8 +11,9 @@ Example::
 
     cred = HttpNtlmAuth('Username', 'Password')
     site = Site('https://mysharepoint.server.com/sites/MySite', auth=cred)
+    sp_list = site.List('list name')
 
-    list_data = site.GetListItems()
+    list_data = sp_list.GetListItems()
 
 .. toctree::
     :maxdepth: 2
