@@ -701,7 +701,9 @@ class soap(object):
                     fieldref.set('Name', field[0])
                     if field[1] == 'DESCENDING':
                         fieldref.set('Ascending', 'FALSE')
-        
+                else:
+	                fieldref.set('Name', field)
+                    
         if 'GroupBy' in pyquery:
             order = etree.SubElement(Query, 'GroupBy')
             for field in pyquery['GroupBy']:
