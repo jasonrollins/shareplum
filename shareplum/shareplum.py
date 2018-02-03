@@ -316,8 +316,10 @@ class _List(object):
                 # from the beginning of their name
                 if value in self.users['sp']:
                     return self.users['sp'][value]
-                else:
+                elif '#' in value:
                     return value.split('#')[1]
+                else:
+                    return value
             else:
                 return value
         except AttributeError:
