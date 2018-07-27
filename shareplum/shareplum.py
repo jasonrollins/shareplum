@@ -1,23 +1,28 @@
 from __future__ import unicode_literals
-#from .version import __version__
+from .version import __version__
 from lxml import etree
 import requests
 from datetime import datetime
 import re
+
 from requests_toolbelt import SSLAdapter
 
 
-__version__='0.1.2'
-
 class Office365(object):
+    """
+    Class to authenticate Office  365 Sharepoint
+    """
     def __init__(self, share_point_site, username, password):
         self.Username = username
         self.Password = password
         self.share_point_site = share_point_site
 
     def GetSecurityToken(self, username, password):
+        """
+        Grabs a security Token to authenticate to Office 365 services
+        """
         url = 'https://login.microsoftonline.com/extSTS.srf'
-        body = f"""
+        body = """
                 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"
                   xmlns:a="http://www.w3.org/2005/08/addressing"
                   xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
@@ -30,8 +35,8 @@ class Office365(object):
                 <o:Security s:mustUnderstand="1"
                    xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
                   <o:UsernameToken>
-                    <o:Username>{username}</o:Username>
-                    <o:Password>{password}</o:Password>
+                    <o:Username>%s</o:Username>
+                    <o:Password>%s</o:Password>
                   </o:UsernameToken>
                 </o:Security>
               </s:Header>
@@ -39,7 +44,7 @@ class Office365(object):
                 <t:RequestSecurityToken xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust">
                   <wsp:AppliesTo xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
                     <a:EndpointReference>
-                      <a:Address>{self.share_point_site}</a:Address>
+                      <a:Address>%s</a:Address>
                     </a:EndpointReference>
                   </wsp:AppliesTo>
                   <t:KeyType>http://schemas.xmlsoap.org/ws/2005/05/identity/NoProofKey</t:KeyType>
@@ -47,16 +52,26 @@ class Office365(object):
                   <t:TokenType>urn:oasis:names:tc:SAML:1.0:assertion</t:TokenType>
                 </t:RequestSecurityToken>
               </s:Body>
-            </s:Envelope>"""
+            </s:Envelope>""" % (username, password, self.share_point_site)
         headers = {'accept': 'application/json;odata=verbose'}
 
-        rawxml = requests.post(url, body, headers=headers)
-        xmldoc = etree.fromstring(rawxml.content)
-        return xmldoc.find(
+        response = requests.post(url, body, headers=headers)
+
+        xmldoc = etree.fromstring(response.content)
+
+        token = xmldoc.find(
             './/{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}BinarySecurityToken'
-        ).text
+        )
+        if token is not None:
+            return token.text
+        else:
+            raise Exception('Check username/password and rootsite')
 
     def GetCookies(self):
+        """
+        Grabs the cookies form your Office Sharepoint site
+        and uses it as Authentication for the rest of the calls
+        """
         sectoken = self.GetSecurityToken(self.Username, self.Password)
         url = self.share_point_site+ '/_forms/default.aspx?wa=wsignin1.0'
         response = requests.post(url, data=sectoken)
@@ -183,6 +198,7 @@ class Site(object):
                                       timeout=self.timeout)
 
         # Parse Request
+        print(response)
         if response == 200:
             return response.text
         else:
