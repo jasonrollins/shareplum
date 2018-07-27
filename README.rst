@@ -16,6 +16,21 @@ Usage
     sp_list = site.List('list name')
     data = sp_list.GetListItems('All Items', rowlimit=200)
 
+Authenticate to Office365 Sharepoint
+------------------------------------
+
+::
+
+    from shareplum import Site
+    from shareplum import Office365
+
+    authcookie = Office365('https://abc.sharepoint.com', username='username@abc.com', password='password').GetCookies()
+    site = Site('https://abc.sharepoint.com/sites/MySharePointSite/', authcookie=authcookie)
+    sp_list = site.List('list name')
+    data = sp_list.GetListItems('All Items', rowlimit=200)
+
+
+
 Features
 --------
 
@@ -23,7 +38,8 @@ Features
 - Automatic conversion between SharePoint internal names and displayed names.
 - Using Queries to filter data when retrieving List Items.
 - Automatic conversion of data types.
-- Supports Users datatype
+- Supports Users datatype.
+- Supports Office365 Sharepoint sites.
 
 Documentation
 -------------
