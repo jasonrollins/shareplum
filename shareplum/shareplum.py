@@ -277,18 +277,21 @@ class Site(object):
                                       timeout=self.timeout)
 
         # Parse Response
-        if response.status_code == 200:
+        if response.status_code != 200:
+            raise ConnectionError('GetUsers GetListItems request failed')
+        try:
             envelope = etree.fromstring(response.text.encode('utf-8'), parser=etree.XMLParser(huge_tree=self.huge_tree))
-            listitems = envelope[0][0][0][0][0]
-            data = []
-            for row in listitems:
-                # Strip the 'ows_' from the beginning with key[4:]
-                data.append({key[4:]: value for (key, value) in row.items() if key[4:]})
+        except:
+            raise ConnectionError("GetUsers GetListItems response failed to parse correctly")
+        listitems = envelope[0][0][0][0][0]
+        data = []
+        for row in listitems:
+            # Strip the 'ows_' from the beginning with key[4:]
+            data.append({key[4:]: value for (key, value) in row.items() if key[4:]})
 
             return {'py': {i['ImnName']: i['ID'] + ';#' + i['ImnName'] for i in data},
                     'sp': {i['ID'] + ';#' + i['ImnName']: i['ImnName'] for i in data}}
-        else:
-            raise Exception("Can't get User Info List")
+
 
     # SharePoint Method Objects
     def List(self, listName):
