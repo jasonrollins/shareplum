@@ -336,6 +336,7 @@ class _List(object):
         # self._disp_cols = {i['DisplayName']: {'name': i['Name'], 'type': i['Type']} for i in self.fields \
         #                   if i['StaticName'] == 'Title' or i['SourceID'] != standard_source}
         self.last_request = None
+        self.date_format = re.compile('\d+-\d+-\d+ \d+:\d+:\d+')
 
     def _url(self, service):
         """Full SharePoint Service URL"""
@@ -371,8 +372,14 @@ class _List(object):
             if field_type in ['Number', 'Currency']:
                 return float(value)
             elif field_type == 'DateTime':
-                # Need to round datetime object
-                return datetime.strptime(value, '%Y-%m-%d %H:%M:%S').date()
+
+
+                # Need to remove the '123;#' from created dates, but we will do it for all dates
+                # self.date_format = re.compile('\d+-\d+-\d+ \d+:\d+:\d+')
+                value = self.date_format.search(value).group(0)
+                
+                # NOTE: I used to round this just date (7/28/2018)
+                return datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
             elif field_type == 'Boolean':
                 if value == '1':
                     return 'Yes'
