@@ -294,13 +294,13 @@ class Site(object):
 
 
     # SharePoint Method Objects
-    def List(self, listName):
+    def List(self, listName, exclude_hidden_fields=False):
         """Sharepoint Lists Web Service
            Microsoft Developer Network:
            The Lists Web service provides methods for working
            with SharePoint lists, content types, list items, and files.
         """
-        return _List(self._session, listName, self._url, self._verify_ssl, self.users, self.huge_tree, self.timeout)
+        return _List(self._session, listName, self._url, self._verify_ssl, self.users, self.huge_tree, self.timeout, exclude_hidden_fields=exclude_hidden_fields)
 
 
 class _List(object):
@@ -310,7 +310,7 @@ class _List(object):
        with SharePoint lists, content types, list items, and files.
     """
 
-    def __init__(self, session, listName, url, verify_ssl, users, huge_tree, timeout):
+    def __init__(self, session, listName, url, verify_ssl, users, huge_tree, timeout, exclude_hidden_fields=False):
         self._session = session
         self.listName = listName
         self._url = url
@@ -318,13 +318,18 @@ class _List(object):
         self.users = users
         self.huge_tree = huge_tree
         self.timeout = timeout
-
+        self._exclude_hidden_fields = exclude_hidden_fields
         # List Info
         self.fields = []
         self.regional_settings = {}
         self.server_settings = {}
         self.GetList()
         self.views = self.GetViewCollection()
+
+        # fields sometimes share the same displayname
+        # filtering fields to only contain visible fields, minimizes the chance of a one field hiding another
+        if exclude_hidden_fields:
+            self.fields = [field for field in self.fields if field.get("Hidden", "FALSE") == "FALSE"]
 
         self._sp_cols = {i['Name']: {'name': i['DisplayName'], 'type': i['Type']} for i in self.fields}
         self._disp_cols = {i['DisplayName']: {'name': i['Name'], 'type': i['Type']} for i in self.fields}

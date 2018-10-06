@@ -45,9 +45,11 @@ Methods
 
     Returns information on the userbase of the current Site.
 
-.. py:function:: List(listName)
+.. py:function:: List(listName, exclude_hidden_fields=False)
 
     Returns a List object for the list with 'listName' on the current Site.
+
+    Sometimes internal fields can take the same DisplayName as visible fields, effectively hiding them from SharePlum. When 'exclude_hidden_fields' is True, these internal fields won't be loaded.
 
 List
 ====
