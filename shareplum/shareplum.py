@@ -1,11 +1,10 @@
 from __future__ import unicode_literals
-#from .version import __version__
+from .version import __version__
 from lxml import etree
 import requests
 from datetime import datetime
 import re
 import os
-# TODO Make sure to go back and un comment versions for offical release
 from requests_toolbelt import SSLAdapter
 
 
@@ -90,8 +89,8 @@ class Site(object):
         if ssl_version is not None:
             self._session.mount('https://', SSLAdapter(ssl_version))
 
-       # self._session.headers.update({'user-agent':
-                                         # 'shareplum/%s' % __version__})
+        self._session.headers.update({'user-agent':
+                                          'shareplum/%s' % __version__})
 
         if authcookie is not None:
             self._session.cookies = authcookie
@@ -142,9 +141,10 @@ class Site(object):
                    "SOAPAction": "http://schemas.microsoft.com/sharepoint/soap/" + soapaction}
         return headers
 
-    # Get Request Diges allow you to post using Sharepoints Rest api
-    #TODO Change to xml parsing instead of json to remove json dependency
     def _get_request_digest(self):
+        """
+        Grabs the request digest which needs to be added for authentication on every rest api request
+        """
         response = self._session.post(url=self._url('RequestDigest'),
                                       headers=self.xml_headers,
                                       verify=self._verify_ssl,
@@ -217,7 +217,6 @@ class Site(object):
                                       timeout=self.timeout)
 
         # Parse Request
-        print(response)
         if response == 200:
             return response.text
         else:
@@ -321,12 +320,17 @@ class Site(object):
         """
         return _List(self._session, listName, self._url, self._verify_ssl, self.users, self.huge_tree, self.timeout, exclude_hidden_fields=exclude_hidden_fields)
 
+    def Documents(self, folder):
+        """
+        Wrapper for interacting with Share Point Rest Api for Document Library Content
+        """
+        return _Documents(self._session, folder, self._url, self._verify_ssl, self.timeout, self.huge_tree,  self._get_request_digest())
 
-    def Files(self, folder):
-        return _Files(self._session, folder, self._url, self._verify_ssl, self.timeout, self.huge_tree,  self._get_request_digest())
 
-
-class _Files(object):
+class _Documents(object):
+    """
+    Wrapper for interacting with Share Point Rest Api for Document Library Content
+    """
     def __init__(self, session, folder, url, verify_ssl, timeout, huge_tree, request_digest):
         self._session = session
         self.timeout = timeout
@@ -342,24 +346,10 @@ class _Files(object):
                            'dataservices': 'http://schemas.microsoft.com/ado/2007/08/dataservices',
                            'inline': 'http://schemas.microsoft.com/ado/2007/08/dataservices/metadata'}
 
-    # adds attachments to list items by sharepoint item ID
-    def AddAttachments(self, file_name, file_full_location, sp_item_id):
-        self._session.headers.update({'accept': 'application/json;odata=verbose'})
-        response = self._session.post  (url=self._url('RequestDigest'),
-                                     # headers={self.json_headers, 'X-RequestDigest': ""},
-                                      verify=self._verify_ssl,
-                                      timeout=self.timeout)
-        filename = ntpath.basename(file_full_location)
-        url = "%s/customers/_api/web/lists/getbytitle('%s')/items({%s})/AttachmentFiles/add(FileName='%s')", self.root_site, self.listName, sp_item_id, filename
-
-        with open(os.path.join(dir, file_name), 'rb') as read_file:
-            content = read_file.read()
-
-        httpstatus = requests.post(url, data=content, cookies=cookie, headers=headers)
-        okay = f'{httpstatus}    {filename}'
-        return okay
-
     def GetSubFolders(self):
+        """
+        Get's sub folders of initialized Folder in Document Object
+        """
         response = self._session.get("%sGetFolderByServerRelativeUrl('%s')?$expand=Folders" % (self._url('RestWeb'), self.folder),
                                       headers=self.rest_api_headers,
                                       verify=self._verify_ssl,
@@ -376,8 +366,12 @@ class _Files(object):
         else:
             return response
 
-    #  https://docs.microsoft.com/en-us/sharepoint/dev/sp-add-ins/working-with-folders-and-files-with-rest#working-with-files-by-using-rest
     def GetDocumentFolderFileNames(self, folder_name=None):
+        """
+        Get all of the file names in a folder
+        :param folder_name: Share Point Folder name or Relative url of the Share Point folder
+        :return: Dict of File names and File's Relative url's or request response if it fails
+        """
         folder_to_use = folder_name
         if folder_name is None: folder_to_use = self.folder
         response = self._session.get("%sGetFolderByServerRelativeUrl('%s')/Files" % (self._url('RestWeb'), folder_to_use),
@@ -397,6 +391,13 @@ class _Files(object):
             return response
 
     def GetFileByRelativeUrl(self, relative_url, file_name, directory_to_save):
+        """
+        Down loads a single file
+        :param relative_url: Share Point File relative url
+        :param file_name: The name the file is saved as in Share Point
+        :param directory_to_save: Local Directory to save the file to
+        :return:
+        """
         response = self._session.get(
             "%sGetFileByServerRelativeUrl('%s')/$value" % (self._url('RestWeb'), relative_url),
             headers=self.rest_api_headers,
@@ -405,20 +406,25 @@ class _Files(object):
         if response.status_code == 200:
             if not os.path.exists(directory_to_save):
                 os.makedirs(directory_to_save)
-            with open("/%s/%s" % (directory_to_save, file_name), "wb") as output:
+            with open(os.path.join(directory_to_save, file_name), "wb") as output:
                 output.write(response.content)
-            return "%s/%s" % (directory_to_save, file_name)
+            return os.path.join(directory_to_save, file_name)
         return response
 
-    # TODO Include in documentation that include sub folders will not return folders if they are empty
     def GetAllFilesInFolder(self, directory_to_save, include_sub_folders=False):
+        """
+        Downloads all of the files in the folder
+        :param directory_to_save: Local directory to save the files to
+        :param include_sub_folders: If you would also like to download sub folders and mirror the file structure of the Share Point Document library.
+        :return:
+        """
         if include_sub_folders:
             sub_folders = self.GetSubFolders()
             sub_folders.append({"folderName": self.folder, "folderUrl": self.folder})
             for folder in sub_folders:
                 files_in_folder = self.GetDocumentFolderFileNames(folder['folderUrl'])
                 for file in files_in_folder:
-                    final_save_location = "%s/%s" % (directory_to_save, folder['folderName'])
+                    final_save_location = os.path.join(directory_to_save, folder['folderName'])
                     if folder['folderName'] == self.folder: final_save_location = directory_to_save
                     self.GetFileByRelativeUrl(file['url'], file['fileName'], final_save_location)
             return directory_to_save
@@ -426,7 +432,6 @@ class _Files(object):
         if not list_of_file_names:
             return "Not valid folder or No Files in the folder."
         for file_in_sharepoint in list_of_file_names:
-            print(file_in_sharepoint['url'])
             self.GetFileByRelativeUrl(file_in_sharepoint['url'], file_in_sharepoint['fileName'], directory_to_save)
         return directory_to_save
 

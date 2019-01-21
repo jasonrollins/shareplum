@@ -67,3 +67,51 @@ You can update data in a SharePoint List easily as well.  You just need the ID n
                    {'ID': '2', 'Title': 'Another Change'}]
     new_list.UpdateListItems(data=update_data, kind='Update')
 
+
+Download Files From Document Library
+====================================
+
+You can download files from Share Point document libraries with Shareplum.
+
+To download all files in a folder use the code below. Best if you save to an empty local directory. Documents expects the SharePoint folder name or relative url of the Folder. ::
+
+    site = Site('https://mysharepoint.server.com/sites/MySite', auth=cred)
+    docObj = site.Documents("Folder Name")
+    docObj.GetAllFilesInFolder("C:\Local\save\Folder")
+
+If you want to download all the sub folders and files in the sub folders while keeping the folder structure as it is in the root Share Point Document folder
+set the include_sub_folders=True like below. ::
+
+    docObj = site.Documents("Folder Name", include_sub_folders=True)
+
+
+Can also get just one sub folder by the code below. ::
+
+        docObj = site.Documents("Folder Name/Sub Folder Name")
+
+You can get a list of all the sub folders by the code below. This will return a Dictionary of Folder names and the relative url of the folder.
+The "folderUrl" returned can be used in all functions that expect a Share Point folder name. ::
+
+        DictOfFolderNames = docObj.GetSubFolders()
+
+If you only want to get a list of what files are in a folder you can use the below code. ::
+
+        site = Site('https://mysharepoint.server.com/sites/MySite', auth=cred)
+
+        # Returns the file names of the folder initialized
+        fileNames = docObj.GetDocumentFolderFileNames()
+
+        # if you want to use a different Folder than the one you initialized but is in the same site can use below code
+        fileNamesOfDifferentFolder = docObj.GetDocumentFolderFileNames("Folder Name")
+
+You can download specified files if you would like using code below. ::
+
+        docObj.GetFileByRelativeUrl("/FolderName/FileNameToSave.txt", "FileNameToSave.txt", "C:\Local\save\Folder")
+
+Can also use previous functions with GetFileByRelativeUrl function if you would like to see what files you are download and add your own logic to it if you wish. ::
+
+        fileNames = docObj.GetDocumentFolderFileNames("Folder Name")
+        for file in fileNames:
+            docObj.GetFileByRelativeUrl(file["url"], file["fileName"], "C:\Local\save\Folder")
+
+
