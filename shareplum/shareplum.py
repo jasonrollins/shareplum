@@ -432,7 +432,7 @@ class _List(object):
         except AttributeError:
             return value
 
-    def GetListItems(self, viewname=None, fields=None, query=None, rowlimit=0):
+    def GetListItems(self, viewname=None, fields=None, query=None, rowlimit=0, debug=False):
         """Get Items from current list
            rowlimit defaulted to 0 (unlimited)
         """
@@ -465,25 +465,28 @@ class _List(object):
 
         # Add query
         if query:
-            where = etree.Element('Where')
 
-            parents = []
-            parents.append(where)
-            for i, field in enumerate(query['Where']):
-                if field == 'And':
-                    parents.append(etree.SubElement(parents[-1], 'And'))
-                elif field == 'Or':
-                    if parents[-1].tag == 'Or':
-                        parents.pop()
-                    parents.append(etree.SubElement(parents[-1], 'Or'))
-                else:
-                    _type = etree.SubElement(parents[-1], field[0])
-                    field_ref = etree.SubElement(_type, 'FieldRef')
-                    field_ref.set('Name', self._disp_cols[field[1]]['name'])
-                    value = etree.SubElement(_type, 'Value')
-                    value.set('Type', self._disp_cols[field[1]]['type'])
-                    value.text = self._sp_type(field[1], field[2])
-            query['Where'] = where
+            if 'Where' in query:
+                where = etree.Element('Where')
+
+                parents = []
+                parents.append(where)
+                for i, field in enumerate(query['Where']):
+                    if field == 'And':
+                        parents.append(etree.SubElement(parents[-1], 'And'))
+                    elif field == 'Or':
+                        if parents[-1].tag == 'Or':
+                            parents.pop()
+                        parents.append(etree.SubElement(parents[-1], 'Or'))
+                    else:
+                        _type = etree.SubElement(parents[-1], field[0])
+                        field_ref = etree.SubElement(_type, 'FieldRef')
+                        field_ref.set('Name', self._disp_cols[field[1]]['name'])
+                        value = etree.SubElement(_type, 'Value')
+                        value.set('Type', self._disp_cols[field[1]]['type'])
+                        value.text = self._sp_type(field[1], field[2])
+                query['Where'] = where
+
             soap_request.add_query(query)
 
         # Set Row Limit
@@ -508,7 +511,10 @@ class _List(object):
 
             self._convert_to_display(data)
 
-            return data
+            if debug:
+                return response
+            else:
+                return data
         else:
             return response
 
@@ -625,8 +631,26 @@ class _List(object):
         else:
             return ("ERROR", response.status_code)
 
-    def UpdateList(self):
+    def UpdateList(self, listName, data, listVersion):
         ### Todo: Complete this one
+
+        # Build Request
+        soap_request = soap('UpdateList')
+        soap_request.add_parameter('listName', listName)
+        soap_request.add_parameter('newFields', description)
+        soap_request.add_parameter('newFields', description)
+        soap_request.add_parameter('updateFields', templateID)
+        soap_request.add_parameter('deleteFields', templateID)
+        soap_request.add_parameter('listVersion', templateID)
+        self.last_request = str(soap_request)
+
+        # Send Request
+        response = self._session.post(url=self._url('Lists'),
+                                      headers=self._headers('AddList'),
+                                      data=str(soap_request),
+                                      verify=self._verify_ssl,
+                                      timeout=self.timeout)
+
         pass
 
     def UpdateListItems(self, data, kind):
@@ -785,7 +809,6 @@ class soap(object):
             order = etree.SubElement(Query, 'OrderBy')
             for field in pyquery['OrderBy']:
                 fieldref = etree.SubElement(order, 'FieldRef')
-                fieldref.set('Name', field)
                 if type(field) == tuple:
                     fieldref.set('Name', field[0])
                     if field[1] == 'DESCENDING':
