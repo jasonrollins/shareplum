@@ -13,6 +13,11 @@ The Where Element is probably the most commonly used. ::
     fields = ['Title', 'My Other Column']
     query = {'Where': [('Eq', 'My Other Column', 'Nice Value')]}
     sp_data = sp_list.GetListItems(fields=fields, query=query)
+
+You don't pass a value if you are using IsNull. ::
+
+    query = {'Where': [('IsNull', 'My Other Column')]}
+    sp_data = sp_list.GetListItems(fields=fields, query=query)
     
 You can use AND or OR for multiple conditions ::
 

@@ -482,9 +482,11 @@ class _List(object):
                         _type = etree.SubElement(parents[-1], field[0])
                         field_ref = etree.SubElement(_type, 'FieldRef')
                         field_ref.set('Name', self._disp_cols[field[1]]['name'])
-                        value = etree.SubElement(_type, 'Value')
-                        value.set('Type', self._disp_cols[field[1]]['type'])
-                        value.text = self._sp_type(field[1], field[2])
+                        if len(field) == 3:
+                            value = etree.SubElement(_type, 'Value')
+                            value.set('Type', self._disp_cols[field[1]]['type'])
+                            value.text = self._sp_type(field[1], field[2])
+
                 query['Where'] = where
 
             soap_request.add_query(query)
