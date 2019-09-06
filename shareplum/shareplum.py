@@ -4,6 +4,7 @@ from lxml import etree
 import requests
 from datetime import datetime
 import re
+from xml.sax.saxutils import escape
 
 from requests_toolbelt import SSLAdapter
 
@@ -52,10 +53,9 @@ class Office365(object):
                   <t:TokenType>urn:oasis:names:tc:SAML:1.0:assertion</t:TokenType>
                 </t:RequestSecurityToken>
               </s:Body>
-            </s:Envelope>""" % (username, password, self.share_point_site)
-        headers = {'accept': 'application/json;odata=verbose'}
+            </s:Envelope>""" % (escape(username), escape(password), self.share_point_site)
 
-        response = requests.post(url, body, headers=headers)
+        response = requests.post(url, body)
 
         xmldoc = etree.fromstring(response.content)
 
@@ -65,7 +65,11 @@ class Office365(object):
         if token is not None:
             return token.text
         else:
-            raise Exception('Check username/password and rootsite')
+            message = xmldoc.findall('.//{http://schemas.microsoft.com/Passport/SoapServices/SOAPFault}text')
+            if len(message) < 1:
+                raise Exception('Error authenticating against Office 365. Was not able to find an error code. Here is '
+                                'the SOAP response from Office 365', response.content)
+            raise Exception('Error authenticating against Office 365. Error from Office 365:', message[0].text)
 
     def GetCookies(self):
         """
