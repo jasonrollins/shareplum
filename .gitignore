@@ -11,3 +11,6 @@ dist/
 build/
 shareplum.egg-info/
 docs/_build/
+env
+.idea
+.mypy_cache

@@ -1,0 +1,8 @@
+[MASTER]
+extension-pkg-whitelist=lxml
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+disable=C0330,R0902,R0913,R0914

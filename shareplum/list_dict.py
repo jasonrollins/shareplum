@@ -1,7 +1,11 @@
 # This is a group of small functions
 # used to work with a list of dictionaries
+from typing import Any
+from typing import Dict
+from typing import List
 
-def changes(new_cmp_dict, old_cmp_dict, id_column, columns):
+
+def changes(new_cmp_dict: Dict, old_cmp_dict: Dict, id_column: str, columns: List[str]) -> List[Dict]:
     """Return a list dict of the changes of the
        rows that exist in both dictionaries
        User must provide an ID column for old_cmp_dict
@@ -15,24 +19,24 @@ def changes(new_cmp_dict, old_cmp_dict, id_column, columns):
         # for missing keys
         old_dict = old_cmp_dict[same_key]
         new_dict = new_cmp_dict[same_key]
-        dict_keys = set(old_dict).intersection(set(new_dict))
 
         update_dict = {}
         for dict_key in columns:
-            old_val = old_dict.get(dict_key, 'NaN')
-            new_val = new_dict.get(dict_key, 'NaN')
-            if old_val != new_val and new_val != 'NaN':
-                if id_column!=None:
+            old_val = old_dict.get(dict_key, "NaN")
+            new_val = new_dict.get(dict_key, "NaN")
+            if old_val != new_val and new_val != "NaN":
+                if id_column:
                     try:
                         update_dict[id_column] = old_dict[id_column]
-                    except KeyError:
-                        print("Input Dictionary 'old_cmp_dict' must have ID column")
+                    except KeyError as e:
+                        print(f"Input Dictionary 'old_cmp_dict' must have ID column: {e}")
                 update_dict[dict_key] = new_val
         if update_dict:
             update_ldict.append(update_dict)
     return update_ldict
 
-def unique(new_cmp_dict, old_cmp_dict):
+
+def unique(new_cmp_dict: Dict, old_cmp_dict: Dict) -> List:
     """Return a list dict of
        the unique keys in new_cmp_dict
     """
@@ -44,7 +48,8 @@ def unique(new_cmp_dict, old_cmp_dict):
         unique_ldict.append(new_cmp_dict[key])
     return unique_ldict
 
-def full_dict(ldict, keys):
+
+def full_dict(ldict: Dict, keys: Any) -> Dict:
     """Return Comparison Dictionaries
        from list dict on keys
        keys: a list of keys that when
@@ -57,10 +62,10 @@ def full_dict(ldict, keys):
 
     cmp_dict = {}
     for line in ldict:
-        index = []
+        index: List[str] = []
         for key in keys:
-            index.append(str(line.get(key, '')))
-        index = '-'.join(index)
-        cmp_dict[index] = line
+            index.append(str(line.get(key, "")))
+        index_str: str = "-".join(index)
+        cmp_dict[index_str] = line
 
     return cmp_dict
