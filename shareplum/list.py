@@ -5,6 +5,7 @@ from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 import requests
 from lxml import etree
@@ -232,6 +233,7 @@ class _List:
         )
 
         # Parse Response
+        # TODO: Patch me?
         if response.status_code == 200:
             envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
             listitems = envelope[0][0][0][0][0]
@@ -273,23 +275,44 @@ class _List:
         # TODO: Patch me
         # Parse Response
         if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
-            _list = envelope[0][0][0][0]
-            for row in _list[0].getchildren():
-                self.fields.append({key: value for (key, value) in row.items()})
-
-            for setting in _list[1].getchildren():
-                self.regional_settings[
-                    setting.tag.replace("{http://schemas.microsoft.com/sharepoint/soap/}", "")
-                ] = setting.text
-
-            for setting in _list[2].getchildren():
-                self.server_settings[
-                    setting.tag.replace("{http://schemas.microsoft.com/sharepoint/soap/}", "")
-                ] = setting.text
+            envelope: etree.ElementTree = etree.fromstring(
+                response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree)
+            )
+            (fields, regional_settings, server_settings) = self.parse_list_envelope(envelope)
+            self.fields += fields
+            self.regional_settings.update(regional_settings)
+            self.server_settings.update(server_settings)
 
         else:
             raise Exception("ERROR:", response.status_code, response.text)
+
+    @staticmethod
+    def parse_list_envelope(envelope: etree.ElementTree) -> Tuple[List[Dict[str, Any]], Dict[str, str], Dict[str, str]]:
+        _list = envelope[0][0][0][0]
+        fields = []
+        regional_settings = dict()
+        server_settings = dict()
+
+        _list = envelope[0][0][0][0]
+        # info = {key: value for (key, value) in _list.items()}
+        for row in _list.xpath(
+            "//*[re:test(local-name(), '.*Fields.*')]", namespaces={"re": "http://exslt.org/regular-expressions"}
+        )[0].getchildren():
+            fields.append({key: value for (key, value) in row.items()})
+
+        for setting in _list.xpath(
+            "//*[re:test(local-name(), '.*RegionalSettings.*')]",
+            namespaces={"re": "http://exslt.org/regular-expressions"},
+        )[0].getchildren():
+            regional_settings[setting.tag.strip("{http://schemas.microsoft.com/sharepoint/soap/}")] = setting.text
+
+        for setting in _list.xpath(
+            "//*[re:test(local-name(), '.*ServerSettings.*')]",
+            namespaces={"re": "http://exslt.org/regular-expressions"},
+        )[0].getchildren():
+            server_settings[setting.tag.strip("{http://schemas.microsoft.com/sharepoint/soap/}")] = setting.text
+
+        return fields, regional_settings, server_settings
 
     def get_view(self, view_name: str) -> Optional[Dict]:
         """Get Info on View Name
@@ -325,7 +348,9 @@ class _List:
 
         # Parse Response
         if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
+            envelope: etree.ElementTree = etree.fromstring(
+                response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree)
+            )
             # TODO: Fix me
             view = envelope[0][0][0][0]
             info = {key: value for (key, value) in view.items()}

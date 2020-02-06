@@ -14,3 +14,7 @@ docs/_build/
 env
 .idea
 .mypy_cache
+*.egg-info
+pip-wheel-metadata/
+__pycache__
+tests/test_private*
