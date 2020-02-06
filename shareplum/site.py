@@ -11,6 +11,7 @@ from .list import _List
 from .soap import Soap
 from .version import __version__
 
+# TODO: Port to defusedxml to satisfy Bandit
 # import defusedxml.ElementTree as etree
 
 
@@ -195,7 +196,7 @@ class Site:
         # Parse Response
         if response.status_code == 200:
             envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
-            # TODO: Fix this
+            # TODO: Verify if this works on Sharepoint lists with validation
             lists = envelope[0][0][1]
             data = []
             for _list in lists:
@@ -240,7 +241,7 @@ class Site:
             envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
         except Exception as e:
             raise ConnectionError(f"GetUsers GetListItems response failed to parse correctly: {e}")
-        # TODO: Fix me with XPath
+        # TODO: Verify if this works on Sharepoint lists with validation
         listitems = envelope[0][0][0][0][0]
         data = []
         for row in listitems:
@@ -253,6 +254,7 @@ class Site:
         }
 
     # SharePoint Method Objects
+    # Not the best name as it could clash with the built-in list()
     def list(self, list_name: str, exclude_hidden_fields: bool = False) -> _List:
         """Sharepoint Lists Web Service
            Microsoft Developer Network:
@@ -269,3 +271,10 @@ class Site:
             self.timeout,
             exclude_hidden_fields=exclude_hidden_fields,
         )
+
+    # Legacy API
+    List = list
+    GetUsers = get_users
+    GetListCollection = get_list_collection
+    DeleteList = delete_list
+    AddList = add_list

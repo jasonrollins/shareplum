@@ -79,3 +79,7 @@ class Office365:
         url = self.share_point_site + "/_forms/default.aspx?wa=wsignin1.0"
         response = requests.post(url, data=sectoken)
         return response.cookies
+
+    # Legacy API
+    GetSecurityToken = get_security_token
+    GetCookies = get_cookies

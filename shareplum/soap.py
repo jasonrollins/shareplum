@@ -4,6 +4,7 @@ from typing import Optional
 
 from lxml import etree
 
+# TODO: Port to defusedxml to satisfy Bandit
 # import defusedxml.ElementTree as etree
 
 

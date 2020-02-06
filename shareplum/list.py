@@ -233,7 +233,7 @@ class _List:
         )
 
         # Parse Response
-        # TODO: Patch me?
+        # TODO: Verify if this works with Sharepoint lists with validation
         if response.status_code == 200:
             envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
             listitems = envelope[0][0][0][0][0]
@@ -477,3 +477,10 @@ class _List:
             return attachments
         else:
             return response
+
+    # Legacy API
+    GetList = get_list
+    GetListItems = get_list_items
+    GetView = get_view
+    GetViewCollection = get_view_collection
+    GetAttachmentCollection = get_attachment_collection
