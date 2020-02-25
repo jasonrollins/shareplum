@@ -236,7 +236,7 @@ class Site:
 
         # Parse Response
         if response.status_code != 200:
-            raise ConnectionError("GetUsers GetListItems request failed")
+            raise ConnectionError(f"GetUsers GetListItems request failed - status code: {response.status_code}")
         try:
             envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
         except Exception as e:

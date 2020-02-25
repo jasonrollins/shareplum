@@ -272,7 +272,6 @@ class _List:
             timeout=self.timeout,
         )
 
-        # TODO: Patch me
         # Parse Response
         if response.status_code == 200:
             envelope: etree.ElementTree = etree.fromstring(

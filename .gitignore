@@ -18,3 +18,4 @@ env
 pip-wheel-metadata/
 __pycache__
 tests/test_private*
+.DS_Store
