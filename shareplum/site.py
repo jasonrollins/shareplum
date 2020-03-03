@@ -21,13 +21,13 @@ class Site:
 
     def __init__(
         self,
-        site_url: str,
-        auth: Optional[Any] = None,
-        authcookie: Optional[requests.cookies.RequestsCookieJar] = None,
-        verify_ssl: bool = True,
-        ssl_version: Optional[float] = None,
-        huge_tree: bool = False,
-        timeout: Optional[int] = None,
+        site_url,  # type: str
+        auth=None,  # type: Optional[Any]
+        authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
+        verify_ssl=True,  # type: bool
+        ssl_version=None,  # type: Optional[float]
+        huge_tree=False,  # type: bool
+        timeout=None,  # type: Optional[int]
     ):
         self.site_url = site_url
         self._verify_ssl = verify_ssl
@@ -47,9 +47,9 @@ class Site:
 
         self.timeout = timeout
 
-        self.last_request: Optional[str] = None
+        self.last_request = None  # type: Optional[str]
 
-        self._services_url: Dict[str, str] = {
+        self._services_url = {
             "Alerts": "/_vti_bin/Alerts.asmx",
             "Authentication": "/_vti_bin/Authentication.asmx",
             "Copy": "/_vti_bin/Copy.asmx",
@@ -69,15 +69,17 @@ class Site:
             "Views": "/_vti_bin/Views.asmx",
             "WebPartPages": "/_vti_bin/WebPartPages.asmx",
             "Webs": "/_vti_bin/Webs.asmx",
-        }
+        }  # type: Dict[str, str]
 
         self.users = self.get_users()
 
-    def _url(self, service: str) -> str:
+    def _url(self, service):
+        # type: (str) -> str
         """Full SharePoint Service URL"""
         return "".join([self.site_url, self._services_url[service]])
 
-    def _headers(self, soap_action: str) -> Dict[str, str]:
+    def _headers(self, soap_action):
+        # type: (str) -> Dict[str, str]
         headers = {
             "Content-Type": "text/xml; charset=UTF-8",
             "SOAPAction": "http://schemas.microsoft.com/sharepoint/soap/" + soap_action,
@@ -86,6 +88,7 @@ class Site:
 
     # This is part of List but seems awkward under the List Method
     def add_list(self, list_name, description, template_id):
+        # type: (str, str, str) -> Any
         """Create a new List
            Provide: List Name, List Description, and List Template
            Templates Include:
@@ -142,7 +145,7 @@ class Site:
         response = self._session.post(
             url=self._url("Lists"),
             headers=self._headers("AddList"),
-            data=str(soap_request),
+            data=str(soap_request).encode("utf-8"),
             verify=self._verify_ssl,
             timeout=self.timeout,
         )
@@ -154,7 +157,8 @@ class Site:
         else:
             return response
 
-    def delete_list(self, list_name: str) -> Optional[str]:
+    def delete_list(self, list_name):
+        # type: (str) -> Optional[str]
         """Delete a List with given name"""
 
         # Build Request
@@ -176,9 +180,10 @@ class Site:
             return response.text
         else:
             response.raise_for_status()
-            raise RuntimeError(f"Response code: {response.status_code}, response: {response.text}")
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
 
-    def get_list_collection(self) -> Optional[List[Dict[str, str]]]:
+    def get_list_collection(self):
+        # type: () -> Optional[List[Dict[str, str]]]
         """Returns List information for current Site"""
         # Build Request
         soap_request = Soap("GetListCollection")
@@ -210,9 +215,10 @@ class Site:
             return data
         else:
             response.raise_for_status()
-            raise RuntimeError(f"Response code: {response.status_code}, response: {response.text}")
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
 
-    def get_users(self, rowlimit: int = 0) -> Optional[Dict[str, Dict[str, str]]]:
+    def get_users(self, rowlimit=0):
+        # type: (int) -> Optional[Dict[str, Dict[str, str]]]
         """Get Items from current list
            rowlimit defaulted to 0 (no limit)
         """
@@ -236,11 +242,13 @@ class Site:
 
         # Parse Response
         if response.status_code != 200:
-            raise ConnectionError(f"GetUsers GetListItems request failed - status code: {response.status_code}")
+            raise requests.ConnectionError(
+                "GetUsers GetListItems request failed - status code: " + str(response.status_code)
+            )
         try:
             envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
         except Exception as e:
-            raise ConnectionError(f"GetUsers GetListItems response failed to parse correctly: {e}")
+            raise requests.ConnectionError("GetUsers GetListItems response failed to parse correctly: " + str(e))
         # TODO: Verify if this works on Sharepoint lists with validation
         listitems = envelope[0][0][0][0][0]
         data = []
@@ -255,7 +263,8 @@ class Site:
 
     # SharePoint Method Objects
     # Not the best name as it could clash with the built-in list()
-    def list(self, list_name: str, exclude_hidden_fields: bool = False) -> _List:
+    def list(self, list_name, exclude_hidden_fields=False):
+        # type: (str, bool) -> _List
         """Sharepoint Lists Web Service
            Microsoft Developer Network:
            The Lists Web service provides methods for working

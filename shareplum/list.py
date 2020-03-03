@@ -24,15 +24,16 @@ class _List:
 
     def __init__(
         self,
-        session: requests.Session,
-        list_name: str,
-        url: Callable[[str], str],
-        verify_ssl: bool,
-        users: Optional[Dict],
-        huge_tree: bool,
-        timeout: Optional[int],
-        exclude_hidden_fields: bool = False,
-    ) -> None:
+        session,  # type: requests.Session
+        list_name,  # type: str
+        url,  # type: Callable[[str], str]
+        verify_ssl,  # type: bool
+        users,  # type: Optional[Dict]
+        huge_tree,  # type: bool
+        timeout,  # type: Optional[int]
+        exclude_hidden_fields=False,  # type: bool
+    ):
+        # type: (...) -> None
         self._session = session
         self.list_name = list_name
         self._url = url
@@ -42,9 +43,9 @@ class _List:
         self.timeout = timeout
         self._exclude_hidden_fields = exclude_hidden_fields
         # List Info
-        self.fields: List[Dict[str, str]] = []
-        self.regional_settings: Dict[str, str] = {}
-        self.server_settings: Dict[str, str] = {}
+        self.fields = []  # type: List[Dict[str, str]]
+        self.regional_settings = {}  # type: Dict[str, str]
+        self.server_settings = {}  # type: Dict[str, str]
         self.get_list()
         self.views = self.get_view_collection()
 
@@ -60,17 +61,19 @@ class _List:
         title_col = self._sp_cols["Title"]["name"]
         title_type = self._sp_cols["Title"]["type"]
         self._disp_cols[title_col] = {"name": "Title", "type": title_type}
-        self.last_request: Optional[str] = None
+        self.last_request = None  # type: Optional[str]
         self.date_format = re.compile("[0-9]+-[0-9]+-[0-9]+ [0-9]+:[0-9]+:[0-9]+")
 
-    def _headers(self, soapaction: str) -> Dict[str, str]:
+    def _headers(self, soapaction):
+        # type: (str) -> Dict[str,str]
         headers = {
             "Content-Type": "text/xml; charset=UTF-8",
             "SOAPAction": "http://schemas.microsoft.com/sharepoint/soap/" + soapaction,
         }
         return headers
 
-    def _convert_to_internal(self, data: List[Dict]) -> None:
+    def _convert_to_internal(self, data):
+        # type: (List[Dict]) -> None
         """From 'Column Title' to 'Column_x0020_Title'"""
         for _dict in data:
             keys = list(_dict.keys())[:]
@@ -79,7 +82,8 @@ class _List:
                     raise Exception(key + " not a column in current List.")
                 _dict[self._disp_cols[key]["name"]] = self._sp_type(key, _dict.pop(key))
 
-    def _convert_to_display(self, data: List[Dict]) -> None:
+    def _convert_to_display(self, data):
+        # type: (List[Dict]) -> None
         """From 'Column_x0020_Title' to  'Column Title'"""
         for _dict in data:
             keys = list(_dict.keys())[:]
@@ -88,7 +92,8 @@ class _List:
                     raise Exception(key + " not a column in current List.")
                 _dict[self._sp_cols[key]["name"]] = self._python_type(key, _dict.pop(key))
 
-    def _python_type(self, key: str, value: Any) -> Any:
+    def _python_type(self, key, value):
+        # type: (str, Any) -> Any
         """Returns proper type from the schema"""
         try:
             field_type = self._sp_cols[key]["type"]
@@ -127,7 +132,8 @@ class _List:
             # TODO: log me
             return value
 
-    def _sp_type(self, key: str, value: Any) -> Any:
+    def _sp_type(self, key, value):
+        # type: (str, Any) -> Any
         """Returns proper type from the schema"""
         try:
             field_type = self._disp_cols[key]["type"]
@@ -152,12 +158,13 @@ class _List:
 
     def get_list_items(
         self,
-        view_name: Optional[str] = None,
-        fields: Optional[List[str]] = None,
-        query: Optional[Dict] = None,
-        row_limit: int = 0,
-        debug: bool = False,
-    ) -> Optional[Any]:
+        view_name=None,  # type: Optional[str]
+        fields=None,  # type: Optional[List[str]]
+        query=None,  # type: Optional[Dict]
+        row_limit=0,  # type: int
+        debug=False,  # type: bool
+    ):
+        # type: (...) -> Optional[Any]
         """Get Items from current list
            rowlimit defaulted to 0 (unlimited)
         """
@@ -251,7 +258,7 @@ class _List:
         else:
             return response
 
-    def get_list(self) -> None:
+    def get_list(self):  # type: () -> None
         """Get Info on Current List
            This is run in __init__ so you don't
            have to run it again.
@@ -274,9 +281,9 @@ class _List:
 
         # Parse Response
         if response.status_code == 200:
-            envelope: etree.ElementTree = etree.fromstring(
+            envelope = etree.fromstring(
                 response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree)
-            )
+            )  # type: etree.ElementTree
             (fields, regional_settings, server_settings) = self.parse_list_envelope(envelope)
             self.fields += fields
             self.regional_settings.update(regional_settings)
@@ -286,7 +293,8 @@ class _List:
             raise Exception("ERROR:", response.status_code, response.text)
 
     @staticmethod
-    def parse_list_envelope(envelope: etree.ElementTree) -> Tuple[List[Dict[str, Any]], Dict[str, str], Dict[str, str]]:
+    def parse_list_envelope(envelope):
+        # type: (etree.ElementTree) -> Tuple[List[Dict[str, Any]], Dict[str, str], Dict[str, str]]
         _list = envelope[0][0][0][0]
         fields = []
         regional_settings = dict()
@@ -313,7 +321,7 @@ class _List:
 
         return fields, regional_settings, server_settings
 
-    def get_view(self, view_name: str) -> Optional[Dict]:
+    def get_view(self, view_name):  # type: (str)  -> Optional[Dict]
         """Get Info on View Name
         """
 
@@ -347,10 +355,10 @@ class _List:
 
         # Parse Response
         if response.status_code == 200:
-            envelope: etree.ElementTree = etree.fromstring(
+            envelope = etree.fromstring(
                 response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree)
-            )
-            # TODO: Fix me
+            )  # type: etree.ElementTree
+            # TODO: Fix me? Should this use XPath too?
             view = envelope[0][0][0][0]
             info = {key: value for (key, value) in view.items()}
             fields = [x.items()[0][1] for x in view[1]]
@@ -359,7 +367,7 @@ class _List:
         else:
             raise Exception("ERROR:", response.status_code, response.text)
 
-    def get_view_collection(self) -> Optional[Dict[str, Dict[str, str]]]:
+    def get_view_collection(self):  # type: () -> Optional[Dict[str, Dict[str, str]]]
         """Get Views for Current List
            This is run in __init__ so you don't
            have to run it again.
@@ -394,9 +402,9 @@ class _List:
 
         else:
             response.raise_for_status()
-            raise RuntimeError(f"Response error: {response.status_code}: {response.text}")
+            raise RuntimeError("Response error: " + str(response.status_code) + ": " + str(response.text))
 
-    def update_list_items(self, data: List[Dict[str, str]], kind: str) -> Any:
+    def update_list_items(self, data, kind):  # type: (List[Dict[str, str]], str) -> Any
         """Update List Items
            kind = 'New', 'Update', or 'Delete'
 
@@ -437,7 +445,7 @@ class _List:
             envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
             # TODO: Fix me
             results = envelope[0][0][0][0]
-            data_out: Dict = {}
+            data_out = {}  # type: Dict
             for result in results:
                 if result.text != "0x00000000" and result[0].text != "0x00000000":
                     data_out[result.attrib["ID"]] = (result[0].text, result[1].text)
@@ -447,7 +455,7 @@ class _List:
         else:
             return response
 
-    def get_attachment_collection(self, _id: str) -> Any:
+    def get_attachment_collection(self, _id):  # type: (str) -> Any
         """Get Attachments for given List Item ID"""
 
         # Build Request

@@ -11,12 +11,14 @@ class Office365:
     Class to authenticate Office  365 Sharepoint
     """
 
-    def __init__(self, share_point_site: str, username: str, password: str) -> None:
+    def __init__(self, share_point_site, username, password):
+        # type: (str, str, str) -> None
         self.username = username
         self.password = password
         self.share_point_site = share_point_site
 
-    def get_security_token(self, username: str, password: str) -> Optional[str]:
+    def get_security_token(self, username, password):
+        # type: (str, str) -> Optional[str]
         """
         Grabs a security Token to authenticate to Office 365 services
         """
@@ -70,7 +72,8 @@ class Office365:
         else:
             raise Exception("Check username/password and rootsite")
 
-    def get_cookies(self) -> requests.cookies.RequestsCookieJar:
+    def get_cookies(self):
+        # type: () -> requests.cookies.RequestsCookieJar
         """
         Grabs the cookies form your Office Sharepoint site
         and uses it as Authentication for the rest of the calls

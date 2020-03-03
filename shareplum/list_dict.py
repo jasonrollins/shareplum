@@ -5,7 +5,8 @@ from typing import Dict
 from typing import List
 
 
-def changes(new_cmp_dict: Dict, old_cmp_dict: Dict, id_column: str, columns: List[str]) -> List[Dict]:
+def changes(new_cmp_dict, old_cmp_dict, id_column, columns):
+    # type: (Dict, Dict, str, List[str]) -> List[Dict]
     """Return a list dict of the changes of the
        rows that exist in both dictionaries
        User must provide an ID column for old_cmp_dict
@@ -29,14 +30,15 @@ def changes(new_cmp_dict: Dict, old_cmp_dict: Dict, id_column: str, columns: Lis
                     try:
                         update_dict[id_column] = old_dict[id_column]
                     except KeyError as e:
-                        print(f"Input Dictionary 'old_cmp_dict' must have ID column: {e}")
+                        print("Input Dictionary 'old_cmp_dict' must have ID column: " + str(e))
                 update_dict[dict_key] = new_val
         if update_dict:
             update_ldict.append(update_dict)
     return update_ldict
 
 
-def unique(new_cmp_dict: Dict, old_cmp_dict: Dict) -> List:
+def unique(new_cmp_dict, old_cmp_dict):
+    # type: (Dict, Dict) -> List
     """Return a list dict of
        the unique keys in new_cmp_dict
     """
@@ -49,7 +51,8 @@ def unique(new_cmp_dict: Dict, old_cmp_dict: Dict) -> List:
     return unique_ldict
 
 
-def full_dict(ldict: Dict, keys: Any) -> Dict:
+def full_dict(ldict, keys):
+    # type: (Dict, Any) -> Dict
     """Return Comparison Dictionaries
        from list dict on keys
        keys: a list of keys that when
@@ -62,10 +65,10 @@ def full_dict(ldict: Dict, keys: Any) -> Dict:
 
     cmp_dict = {}
     for line in ldict:
-        index: List[str] = []
+        index = []  # type: List[str]
         for key in keys:
             index.append(str(line.get(key, "")))
-        index_str: str = "-".join(index)
+        index_str = "-".join(index)  # type: str
         cmp_dict[index_str] = line
 
     return cmp_dict

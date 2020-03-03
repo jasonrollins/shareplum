@@ -22,3 +22,4 @@ simplegeneric==0.8.1
 six==1.14.0
 snowballstemmer==2.0.0
 Sphinx==2.3.1
+typing==3.7.4.1

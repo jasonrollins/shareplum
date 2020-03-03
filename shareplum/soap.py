@@ -11,7 +11,7 @@ from lxml import etree
 class Soap:
     """A simple class for building SOAP Requests"""
 
-    def __init__(self, command: str) -> None:
+    def __init__(self, command):  # type: (str) -> None
         self.envelope = None
         self.command = command
         self.request = None
@@ -35,13 +35,15 @@ class Soap:
 
         self.start_str = b"""<?xml version="1.0" encoding="utf-8"?>"""
 
-    def add_parameter(self, parameter: str, value: Optional[str] = None) -> None:
+    def add_parameter(self, parameter, value=None):
+        # type: (str, Optional[str]) -> None
         sub = etree.SubElement(self.command, "{http://schemas.microsoft.com/sharepoint/soap/}" + parameter)
         if value:
             sub.text = value
 
     # UpdateListItems Method
-    def add_actions(self, data: List[Dict[str, str]], kind: str) -> None:
+    def add_actions(self, data, kind):
+        # type: (List[Dict[str, str]], str) -> None
         if not self.updates:
             updates = etree.SubElement(self.command, "{http://schemas.microsoft.com/sharepoint/soap/}updates")
             self.batch = etree.SubElement(updates, "Batch")
@@ -73,7 +75,8 @@ class Soap:
                         field.text = str(value)
 
     # GetListFields Method
-    def add_view_fields(self, fields: List[str]) -> None:
+    def add_view_fields(self, fields):
+        # type: (List[str]) -> None
         viewFields = etree.SubElement(self.command, "{http://schemas.microsoft.com/sharepoint/soap/}viewFields")
         viewFields.set("ViewFieldsOnly", "true")
         ViewFields = etree.SubElement(viewFields, "ViewFields")
@@ -82,7 +85,8 @@ class Soap:
             view_field.set("Name", field)
 
     # GetListItems Method
-    def add_query(self, pyquery: Dict) -> None:
+    def add_query(self, pyquery):
+        # type: (Dict) -> None
         query = etree.SubElement(self.command, "{http://schemas.microsoft.com/sharepoint/soap/}query")
         Query = etree.SubElement(query, "Query")
         if "OrderBy" in pyquery:
@@ -105,8 +109,8 @@ class Soap:
         if "Where" in pyquery:
             Query.append(pyquery["Where"])
 
-    def __repr__(self) -> str:
+    def __repr__(self):  # type: () -> str
         return (self.start_str + etree.tostring(self.envelope)).decode("utf-8")
 
-    def __str__(self, pretty_print: bool = False) -> str:
+    def __str__(self, pretty_print=False):  # type: (bool) -> str
         return (self.start_str + etree.tostring(self.envelope, pretty_print=True)).decode("utf-8")
