@@ -7,6 +7,7 @@
 *.bat
 ._*
 *.*~
+.vscode/
 dist/
 build/
 shareplum.egg-info/

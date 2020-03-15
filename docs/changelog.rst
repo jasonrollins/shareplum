@@ -2,6 +2,11 @@
 Changelog
 =========
 
+0.3.0
+=====
+
+Code cleanup and bug fixes.
+
 0.1.1
 =====
 
