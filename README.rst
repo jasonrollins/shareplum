@@ -1,17 +1,7 @@
 SharePlum
 ==========
 
-If you are using SharePoint 2016 or greater use `SharePlum2 <https://github.com/jasonrollins/shareplum2>`_ instead.  This library is no longer actively maintined.  Only use this library if you are using SharePoint 2013 or earlier.
-
 SharePlum is an easier way to work with SharePoint services. It handles all of the messy parts of dealing with SharePoint and allows you to write clean and Pythonic code.
-
-Why are there 2 versions?
--------------------------
-
-1. The SOAP API is obsolete.
-2. I only have access to SharePoint365 so I can not test any changes to this library.
-3. Contributors to this library have submitted PRs that would not work for older versions of SharePoint.
-4. Users of the SharePlum library are limited to the features provided by the SOAP api. 
 
 Usage
 -----
