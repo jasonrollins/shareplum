@@ -2,6 +2,11 @@
 Changelog
 =========
 
+0.4.0
+=====
+
+REST API support
+
 0.3.0
 =====
 

@@ -8,6 +8,7 @@ from typing import Optional
 from typing import Tuple
 
 import requests
+import json
 from lxml import etree
 
 from .soap import Soap
@@ -15,7 +16,7 @@ from .soap import Soap
 # import defusedxml.ElementTree as etree
 
 
-class _List:
+class _List2007:
     """Sharepoint Lists Web Service
        Microsoft Developer Network:
        The Lists Web service provides methods for working
@@ -32,6 +33,7 @@ class _List:
         huge_tree,  # type: bool
         timeout,  # type: Optional[int]
         exclude_hidden_fields=False,  # type: bool
+        site_url=None,
     ):
         # type: (...) -> None
         self._session = session
@@ -47,7 +49,8 @@ class _List:
         self.regional_settings = {}  # type: Dict[str, str]
         self.server_settings = {}  # type: Dict[str, str]
         self.get_list()
-        self.views = self.get_view_collection()
+        # self.views = self.get_view_collection()
+        self.version = "2007"
 
         # fields sometimes share the same displayname
         # filtering fields to only contain visible fields
@@ -491,3 +494,78 @@ class _List:
     GetView = get_view
     GetViewCollection = get_view_collection
     GetAttachmentCollection = get_attachment_collection
+
+
+class _List365(_List2007):
+    def __init__(self,
+        session,  # type: requests.Session
+        list_name,  # type: str
+        url,  # type: Callable[[str], str]
+        verify_ssl,  # type: bool
+        users,  # type: Optional[Dict]
+        huge_tree,  # type: bool
+        timeout,  # type: Optional[int]
+        exclude_hidden_fields=False,  # type: bool
+        site_url=None
+    ):
+        super().__init__(session, list_name, url, verify_ssl, users, huge_tree, timeout, exclude_hidden_fields, site_url)
+        self.site_url = site_url
+        self.schema = self._get_schema()
+        self.version = "v365"
+    
+    def _get_schema(self):
+        
+        url = self.site_url + f"/_api/lists/getbytitle('{self.list_name}')/RenderListDataAsStream"
+
+        body = json.dumps({"parameters": {"RenderOptions": 4}})
+        
+        
+        headers = {'Accept': 'application/json;odata=verbose',
+                   'Content-Type': 'application/json;odata=verbose',
+                   'X-RequestDigest': self.contextinfo['FormDigestValue']}
+        
+        response = self._session.post(url=url,
+                                      headers=headers,
+                                      data=body,
+                                      timeout=self.timeout)
+        
+        data = json.loads(response.text)
+        return data
+        
+    @property
+    def contextinfo(self):
+        response = self._session.post(self.site_url + "/_api/contextinfo")
+        data = json.loads(response.text)
+        return data
+
+    @property
+    def info(self):
+        return self.GetList()
+
+    @property
+    def views(self):
+        return self.GetViewCollection()
+
+    def create_field(self, title, field_type=2, required="false", unique="false", static_name=None):
+        update_data = {}
+        update_data['__metadata'] = {'type': 'SP.Field'}
+        update_data['Title'] = title
+        update_data['FieldTypeKind'] = field_type
+        update_data['Required'] = required
+        update_data['EnforceUniqueValues'] = unique
+        update_data['StaticName'] = static_name
+        body = json.dumps(update_data)
+        
+        url = self.site_url + f"/_api/lists/getbytitle('{self.list_name}')/Fields"
+        
+        headers = {'Accept': 'application/json;odata=verbose',
+                   'Content-Type': 'application/json;odata=verbose',
+                   'X-RequestDigest': self.contextinfo['FormDigestValue']}
+        
+        response = self._session.post(url=url,
+                                      headers=headers,
+                                      data=body,
+                                      timeout=self.timeout)
+        
+        data = json.loads(response.text)
+        return data

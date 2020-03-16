@@ -5,22 +5,29 @@ from typing import Optional
 
 import requests
 from lxml import etree
+# import defusedxml.ElementTree as etree
+import json
 from requests_toolbelt import SSLAdapter
 
-from .list import _List
+from .list import _List2007, _List365
+from .folder import _Folder
 from .soap import Soap
 from .version import __version__
 
-# TODO: Port to defusedxml to satisfy Bandit
-# import defusedxml.ElementTree as etree
+from enum import Enum
 
+# SharePoint Versions
+class Version(Enum):
+    v2007 = 1
+    v2010 = 2
+    v2013 = 3
+    v2016 = 4
+    v2019 = 5
+    v365 = 6
 
-class Site:
-    """Connect to SharePoint Site
-    """
+class _Site2007:
 
-    def __init__(
-        self,
+    def __init__(self,
         site_url,  # type: str
         auth=None,  # type: Optional[Any]
         authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
@@ -72,6 +79,7 @@ class Site:
         }  # type: Dict[str, str]
 
         self.users = self.get_users()
+        self.version = "2007" # For Debugging
 
     def _url(self, service):
         # type: (str) -> str
@@ -270,7 +278,8 @@ class Site:
            The Lists Web service provides methods for working
            with SharePoint lists, content types, list items, and files.
         """
-        return _List(
+
+        return _List2007(
             self._session,
             list_name,
             self._url,
@@ -279,6 +288,7 @@ class Site:
             self.huge_tree,
             self.timeout,
             exclude_hidden_fields=exclude_hidden_fields,
+            site_url = self.site_url,
         )
 
     # Legacy API
@@ -287,3 +297,196 @@ class Site:
     GetListCollection = get_list_collection
     DeleteList = delete_list
     AddList = add_list
+
+class _Site365(_Site2007):
+    def __init__(self,
+        site_url,  # type: str
+        auth=None,  # type: Optional[Any]
+        authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
+        verify_ssl=True,  # type: bool
+        ssl_version=None,  # type: Optional[float]
+        huge_tree=False,  # type: bool
+        timeout=None,  # type: Optional[int]
+    ):
+        super().__init__(site_url, auth, authcookie, verify_ssl, ssl_version, huge_tree, timeout)
+
+        self._session.headers.update({'Accept': 'application/json',
+                                      'Content-Type': 'application/json;odata=nometadata'})
+        self.version="v365"
+
+    @property
+    def info(self):
+        response = self._session.get(self.site_url + "/_api/site")
+        data = json.loads(response.text)
+        return data
+        
+    def Folder(self, folder_name):
+        """Sharepoint Folder Web Service
+        """
+        return _Folder(self._session, folder_name, self.site_url)
+    
+    def _get_form_digest_value(self):
+        response = self._session.post(self.site_url + "/_api/contextinfo")
+        data = json.loads(response.text)
+        return data['FormDigestValue']
+
+    @property
+    def contextinfo(self):
+        response = self._session.post(self.site_url + "/_api/contextinfo")
+        data = json.loads(response.text)
+        return data
+    
+    @property
+    def contenttypes(self):
+        response = self._session.get(self.site_url + "/_api/web/contenttypes")
+        data = json.loads(response.text)
+        return data['value']
+    
+    @property
+    def eventreceivers(self):
+        response = self._session.get(self.site_url + "/_api/web/eventreceivers")
+        data = json.loads(response.text)
+        return data['value']
+    
+    @property
+    def features(self):
+        response = self._session.get(self.site_url + "/_api/web/features")
+        data = json.loads(response.text)
+        return data['value']
+    
+    @property
+    def fields(self):
+        response = self._session.get(self.site_url + "/_api/web/fields")
+        data = json.loads(response.text)
+        return data['value']
+    
+    @property
+    def lists(self):
+        return self.GetListCollection()
+    
+    # This is a duplicate, but in REST
+    # def GetListCollection(self):
+    #     response = self._session.get(self.site_url + "/_api/web/lists")
+    #     data = json.loads(response.text)
+    #     return data['value']
+    
+    @property
+    def siteusers(self):
+        return self.GetUsers()
+    
+    def GetUsers(self, row_limit=None):
+        response = self._session.get(self.site_url + "/_api/web/siteusers")
+        data = json.loads(response.text)
+        return data['value']
+    
+    @property
+    def groups(self):
+        response = self._session.get(self.site_url + "/_api/web/sitegroups")
+        data = json.loads(response.text)
+        return data['value']
+    
+    @property
+    def roleassignments(self):
+        response = self._session.get(self.site_url + "/_api/web/roleassignments")
+        data = json.loads(response.text)
+        return data['value']
+    
+    @property
+    def web(self):
+        response = self._session.get(self.site_url + "/_api/web")
+        data = json.loads(response.text)
+        return data['value']
+
+    # SharePoint Method Objects
+    # Not the best name as it could clash with the built-in list()
+    def list(self, list_name, exclude_hidden_fields=False):
+        # type: (str, bool) -> _List
+        """Sharepoint Lists Web Service
+           Microsoft Developer Network:
+           The Lists Web service provides methods for working
+           with SharePoint lists, content types, list items, and files.
+        """
+
+        return _List365(
+            self._session,
+            list_name,
+            self._url,
+            self._verify_ssl,
+            self.users,
+            self.huge_tree,
+            self.timeout,
+            exclude_hidden_fields=exclude_hidden_fields,
+            site_url=self.site_url,
+        )
+
+    # Legacy API
+    List = list
+    
+
+
+def Site(
+        site_url,  # type: str
+        version=Version.v2007,
+        auth=None,  # type: Optional[Any]
+        authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
+        verify_ssl=True,  # type: bool
+        ssl_version=None,  # type: Optional[float]
+        huge_tree=False,  # type: bool
+        timeout=None,  # type: Optional[int]
+        ):
+
+        # We ask for the various versions of SharePoint with 2010 as default
+        # Multiple Version are allowed, but only 2010, 2013, and 365 are implemented
+        if version==Version.v2007:
+            return _Site2007(site_url,
+                             auth,
+                             authcookie,
+                             verify_ssl,
+                             ssl_version,
+                             huge_tree,
+                             timeout)
+
+        elif version==Version.v2010:
+            return _Site2007(site_url,
+                             auth,
+                             authcookie,
+                             verify_ssl,
+                             ssl_version,
+                             huge_tree,
+                             timeout)
+
+        elif version==Version.v2013:
+            return _Site2007(site_url,
+                             auth,
+                             authcookie,
+                             verify_ssl,
+                             ssl_version,
+                             huge_tree,
+                             timeout)
+
+        elif version==Version.v2016:
+            return _Site365(site_url,
+                             auth,
+                             authcookie,
+                             verify_ssl,
+                             ssl_version,
+                             huge_tree,
+                             timeout)
+
+        elif version==Version.v2019:
+            return _Site365(site_url,
+                             auth,
+                             authcookie,
+                             verify_ssl,
+                             ssl_version,
+                             huge_tree,
+                             timeout)
+
+        elif version==Version.v365:
+            return _Site365(site_url,
+                             auth,
+                             authcookie,
+                             verify_ssl,
+                             ssl_version,
+                             huge_tree,
+                             timeout)
