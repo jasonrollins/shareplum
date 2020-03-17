@@ -2,7 +2,7 @@ import os
 
 from lxml import etree
 
-from shareplum.list import _List
+from shareplum.list import _List2007
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 

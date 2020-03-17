@@ -52,7 +52,21 @@ class _Folder():
             print('You must pass the relative folder url to delete a folder')
         
         return None
-    
+
+    def delete_file(self, file_name):
+        url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')"
+
+        headers = {'Accept': 'application/json;odata=verbose',
+                    'If-Match': '*',
+                    'X-HTTP-Method': 'DELETE',
+                    'Content-Type': 'application/json;odata=verbose',
+                    'X-RequestDigest': self.contextinfo['FormDigestValue']}
+
+        response = self._session.post(url=url,
+                                        headers=headers)
+        
+        return None
+
     @property
     def items(self):        
         response = self._session.get(self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/ListItemAllFields")
