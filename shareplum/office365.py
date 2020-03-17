@@ -2,6 +2,7 @@ from typing import Optional
 
 import requests
 from lxml import etree
+from xml.sax.saxutils import escape
 
 # import defusedxml.ElementTree as etree
 
@@ -54,13 +55,14 @@ class Office365:
                 </t:RequestSecurityToken>
               </s:Body>
             </s:Envelope>""" % (
-            username,
-            password,
+            escape(username),
+            escape(password),
             self.share_point_site,
         )
-        headers = {"accept": "application/json;odata=verbose"}
+        # headers = {"accept": "application/json;odata=verbose"}
 
-        response = requests.post(url, body, headers=headers)
+        # response = requests.post(url, body, headers=headers)
+        response = requests.post(url, body)
 
         xmldoc = etree.fromstring(response.content)
 
@@ -70,7 +72,11 @@ class Office365:
         if token is not None:
             return token.text
         else:
-            raise Exception("Check username/password and rootsite")
+          message = xmldoc.findall('.//{http://schemas.microsoft.com/Passport/SoapServices/SOAPFault}text')
+          if len(message) < 1:
+            raise Exception('Error authenticating against Office 365. Was not able to find an error code. Here is '
+                    'the SOAP response from Office 365', response.content)
+          raise Exception('Error authenticating against Office 365. Error from Office 365:', message[0].text)
 
     def get_cookies(self):
         # type: () -> requests.cookies.RequestsCookieJar
