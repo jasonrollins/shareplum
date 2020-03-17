@@ -58,7 +58,7 @@ Features
 - Automatic conversion of data types.
 - Supports Users datatype.
 - Supports Office365 Sharepoint sites.
-- Supports Folder and File operations with the REST API. (Requires SharPoint 2013 or newer)
+- Supports Folder and File operations with the REST API. (Requires SharePoint 2013 or newer)
 
 Documentation
 -------------
