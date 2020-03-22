@@ -159,7 +159,6 @@ class _Site2007:
         )
 
         # Parse Request
-        print(response)
         if response == 200:
             return response.text
         else:
@@ -184,9 +183,7 @@ class _Site2007:
         )
 
         # Parse Request
-        if response == 200:
-            return response.text
-        else:
+        if response.status_code != 200:
             response.raise_for_status()
             raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
 
