@@ -494,6 +494,7 @@ class _List2007:
     GetView = get_view
     GetViewCollection = get_view_collection
     GetAttachmentCollection = get_attachment_collection
+    UpdateListItems = update_list_items
 
 
 class _List365(_List2007):
