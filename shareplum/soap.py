@@ -47,32 +47,27 @@ class Soap:
         if not self.updates:
             updates = etree.SubElement(self.command, "{http://schemas.microsoft.com/sharepoint/soap/}updates")
             self.batch = etree.SubElement(updates, "Batch")
-            if self.batch:
-                self.batch.set("OnError", "Return")
-                self.batch.set("ListVersion", "1")
+            self.batch.set("OnError", "Return")
+            self.batch.set("ListVersion", "1")
 
         if kind == "Delete":
             for index, _id in enumerate(data, 1):
                 method = etree.SubElement(self.batch, "Method")
-                if method:
-                    method.set("ID", str(index))
-                    method.set("Cmd", kind)
+                method.set("ID", str(index))
+                method.set("Cmd", kind)
                 field = etree.SubElement(method, "Field")
-                if field:
-                    field.set("Name", "ID")
-                    field.text = str(_id)
+                field.set("Name", "ID")
+                field.text = str(_id)
 
         else:
             for index, row in enumerate(data, 1):
                 method = etree.SubElement(self.batch, "Method")
-                if method:
-                    method.set("ID", str(index))
-                    method.set("Cmd", kind)
+                method.set("ID", str(index))
+                method.set("Cmd", kind)
                 for key, value in row.items():
                     field = etree.SubElement(method, "Field")
-                    if field:
-                        field.set("Name", key)
-                        field.text = str(value)
+                    field.set("Name", key)
+                    field.text = str(value)
 
     # GetListFields Method
     def add_view_fields(self, fields):
