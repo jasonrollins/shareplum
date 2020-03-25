@@ -21,6 +21,7 @@ Example::
     install
     tutorial
     queries
+    files
     advanced
     objects
     changelog

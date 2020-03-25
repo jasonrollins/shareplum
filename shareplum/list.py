@@ -176,7 +176,7 @@ class _List2007:
         soap_request = Soap("GetListItems")
         soap_request.add_parameter("listName", self.list_name)
         # Convert Displayed View Name to View ID
-        if view_name and self.views:
+        if view_name:
             soap_request.add_parameter("viewName", self.views[view_name]["Name"][1:-1])
 
         # Add viewFields
@@ -193,16 +193,16 @@ class _List2007:
                 soap_request.add_query({"OrderBy": ["ID"]})
 
         elif view_name:
-            v = self.get_view(view_name)
-            if v:
-                viewfields = v["fields"]  # Might be wrong
+            viewfields = self.get_view(view_name)["fields"]
         else:
             # No fields or views provided so get everything
             viewfields = [x for x in self._sp_cols]
 
         # Add query
         if query:
+            where = etree.Element('Where')
 
+            parents = [where]
             if "Where" in query:
                 where = etree.Element("Where")
 
@@ -217,13 +217,10 @@ class _List2007:
                     else:
                         _type = etree.SubElement(parents[-1], field[0])
                         field_ref = etree.SubElement(_type, "FieldRef")
-                        if field_ref:
-                            field_ref.set("Name", self._disp_cols[field[1]]["name"])
-                        if len(field) == 3:
-                            value = etree.SubElement(_type, "Value")
-                            if value:
-                                value.set("Type", self._disp_cols[field[1]]["type"])
-                                value.text = self._sp_type(field[1], field[2])
+                        field_ref.set("Name", self._disp_cols[field[1]]["name"])
+                        value = etree.SubElement(_type, "Value")
+                        value.set("Type", self._disp_cols[field[1]]["type"])
+                        value.text = self._sp_type(field[1], field[2])
 
                 query["Where"] = where
 

@@ -23,6 +23,45 @@ For Office 365 Sharepoint is just as easy. The Office365 class grabs a login tok
     site = Site('https://abc.sharepoint.com/sites/MySharePointSite/', authcookie=authcookie)
 
 
+Access REST API
+================
+You can access aditional features by utilizing the SharePoint REST API in SharePlum.  To access this API you must specify a SharePoint version higher than 2013 when create your Site object.
+
+
+::
+
+    from shareplum import Site
+    from shareplum import Office365
+    from shareplum.site import Version
+
+    authcookie = Office365('https://abc.sharepoint.com', username='username@abc.com', password='password').GetCookies()
+    site = Site('https://abc.sharepoint.com/sites/MySharePointSite/', version=Version.v2016, authcookie=authcookie)
+
+The REST API gives you access to the Folder class. ::
+
+    folder = site.Folder('Shared Documents/This Folder')
+    folder.upload_file('Hello', 'new.txt')
+    folder.get_file('new.txt')
+    folder.check_out('new.txt')
+    folder.check_in('new.txt', "My check-in comment")
+    folder.delete_file('new.txt')
+
+
+SharePoint Versions
+====================
+The available versions options are given below:
+
+::
+
+    Version.v2007 (default)
+    Version.v2010
+    Version.v2013
+    Version.v2016
+    Version.v2019
+    Version.v365
+
+There are currently only 2 actual version implemented: 2007 and 365.  v2010 is an alias for v2007 and v2013, v2016,  and v2019 are aliases for v365.
+
 Add A List
 ==========
 

@@ -27,17 +27,17 @@ class ListTestCase(unittest.TestCase):
     def tearDown(self):
         self.site._session.close()
 
-    def test_create_list(self):
+    def test_a_create_list(self):
         print("Create List")
         self.site.AddList(self.test_list, description='Great List!', template_id='Custom List')
         self.assertTrue(self.test_list in [i['Title'] for i in self.site.get_list_collection()])
 
-    def test_get_list_fields(self):
+    def test_b_get_list_fields(self):
         print("Get Fields")
         self.list = self.site.List(self.server["test_list"])
         self.assertIsNotNone(self.list.fields)
 
-    def test_update_list(self):
+    def test_c_update_list(self):
         print("Update List")
         self.list = self.site.List(self.server["test_list"])
         my_data = data=[{'Title': 'First Row!'},
@@ -45,7 +45,14 @@ class ListTestCase(unittest.TestCase):
         self.list.UpdateListItems(data=my_data, kind='New')
         self.assertEqual(len(self.list.get_list_items(row_limit=2)), 2)
 
-    def test_users(self):
+    def test_d_query_list(self):
+        print('Test Query')
+        self.list = self.site.List(self.server["test_list"])
+        query = {'Where': [('Eq', 'Title', 'First Row!')]}
+        items = self.list.GetListItems(fields=['Title'], query=query) 
+        self.assertEqual(len(items), 1)
+
+    def test_e_users(self):
         print("Test Users")
         self.list = self.site.List(self.server["test_list"])
         self.assertIsNotNone(self.list.users)
