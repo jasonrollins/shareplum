@@ -49,7 +49,7 @@ class _List2007:
         self.regional_settings = {}  # type: Dict[str, str]
         self.server_settings = {}  # type: Dict[str, str]
         self.get_list()
-        # self.views = self.get_view_collection()
+        self.views = self.get_view_collection()
         self.version = "2007"
 
         # fields sometimes share the same displayname
@@ -540,9 +540,9 @@ class _List365(_List2007):
     def info(self):
         return self.GetList()
 
-    @property
-    def views(self):
-        return self.GetViewCollection()
+    # @property
+    # def views(self):
+    #     return self.GetViewCollection()
 
     def create_field(self, title, field_type=2, required="false", unique="false", static_name=None):
         update_data = {}

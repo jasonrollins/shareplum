@@ -45,14 +45,19 @@ class ListTestCase(unittest.TestCase):
         self.list.UpdateListItems(data=my_data, kind='New')
         self.assertEqual(len(self.list.get_list_items(row_limit=2)), 2)
 
-    def test_d_query_list(self):
+    def test_d_get_view(self):
+        print("Get View")
+        self.list = self.site.List(self.server["test_list"])
+        self.assertEqual(len(self.list.GetListItems("All Items")), 2)
+
+    def test_e_query_list(self):
         print('Test Query')
         self.list = self.site.List(self.server["test_list"])
         query = {'Where': [('Eq', 'Title', 'First Row!')]}
         items = self.list.GetListItems(fields=['Title'], query=query) 
         self.assertEqual(len(items), 1)
 
-    def test_e_users(self):
+    def test_f_users(self):
         print("Test Users")
         self.list = self.site.List(self.server["test_list"])
         self.assertIsNotNone(self.list.users)
