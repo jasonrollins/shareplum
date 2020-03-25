@@ -7,6 +7,7 @@
 *.bat
 ._*
 *.*~
+venv/
 .vscode/
 dist/
 build/
