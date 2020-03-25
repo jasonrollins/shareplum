@@ -25,7 +25,7 @@ For Office 365 Sharepoint is just as easy. The Office365 class grabs a login tok
 
 Access REST API
 ================
-You can access aditional features by utilizing the SharePoint REST API in SharePlum.  To access this API you must specify a SharePoint version higher than 2013 when create your Site object.
+You can access aditional features by utilizing the SharePoint REST API in SharePlum.  To access this API you must specify a SharePoint version higher than 2013 when creating your Site object.
 
 
 ::
@@ -49,7 +49,7 @@ The REST API gives you access to the Folder class. ::
 
 SharePoint Versions
 ====================
-The available versions options are given below:
+The available version options are given below:
 
 ::
 
@@ -60,7 +60,7 @@ The available versions options are given below:
     Version.v2019
     Version.v365
 
-There are currently only 2 actual version implemented: 2007 and 365.  v2010 is an alias for v2007 and v2013, v2016,  and v2019 are aliases for v365.
+There are currently only 2 actual versions implemented: 2007 and 365.  v2010 is an alias for v2007 and v2013, v2016,  and v2019 are aliases for v365.
 
 Add A List
 ==========

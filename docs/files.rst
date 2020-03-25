@@ -9,7 +9,7 @@ SharePlum can work with files and folders in SharePoint version 2013 and higher 
 Folders
 =====
 
-When you create an instance of a folder, you specifiy the folder location.  This folder will be created if is does not exist. ::
+When you create an instance of a folder, you specifiy the folder location.  This folder will be created if it does not exist. ::
 
     folder = site.Folder('Shared Documents/This Folder')
 
@@ -33,4 +33,5 @@ Check in a file ::
     folder.check_in('new.txt', "My check-in comment")
 
 Delete a file ::
+
     folder.delete_file('new.txt')
