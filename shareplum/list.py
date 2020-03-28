@@ -283,9 +283,9 @@ class _List2007:
 
         # Parse Response
         if response.status_code == 200:
-            envelope = etree.fromstring(
-                response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree)
-            )  # type: etree.ElementTree
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True)) # type: etree.ElementTree
             (fields, regional_settings, server_settings) = self.parse_list_envelope(envelope)
             self.fields += fields
             self.regional_settings.update(regional_settings)
@@ -302,7 +302,6 @@ class _List2007:
         regional_settings = dict()
         server_settings = dict()
 
-        _list = envelope[0][0][0][0]
         # info = {key: value for (key, value) in _list.items()}
         for row in _list.xpath(
             "//*[re:test(local-name(), '.*Fields.*')]", namespaces={"re": "http://exslt.org/regular-expressions"}
@@ -357,9 +356,9 @@ class _List2007:
 
         # Parse Response
         if response.status_code == 200:
-            envelope = etree.fromstring(
-                response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree)
-            )  # type: etree.ElementTree
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True)) # type: etree.ElementTree
             # TODO: Fix me? Should this use XPath too?
             view = envelope[0][0][0][0]
             info = {key: value for (key, value) in view.items()}
@@ -392,7 +391,9 @@ class _List2007:
 
         # Parse Response
         if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
             views = envelope[0][0][0][0]
             data = []
             for row in views.getchildren():
@@ -444,7 +445,9 @@ class _List2007:
 
         # Parse Response
         if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
             # TODO: Fix me
             results = envelope[0][0][0][0]
             data_out = {}  # type: Dict
@@ -477,7 +480,9 @@ class _List2007:
 
         # Parse Request
         if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
             # TODO: Fix this
             attaches = envelope[0][0][0][0]
             attachments = []
