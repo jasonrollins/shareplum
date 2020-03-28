@@ -242,7 +242,9 @@ class _List2007:
         # Parse Response
         # TODO: Verify if this works with Sharepoint lists with validation
         if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
             listitems = envelope[0][0][0][0][0]
             data = []
             for row in listitems:

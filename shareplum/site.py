@@ -205,7 +205,9 @@ class _Site2007:
 
         # Parse Response
         if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
             # TODO: Verify if this works on Sharepoint lists with validation
             lists = envelope[0][0][1]
             data = []
@@ -251,7 +253,9 @@ class _Site2007:
                 "GetUsers GetListItems request failed - status code: " + str(response.status_code)
             )
         try:
-            envelope = etree.fromstring(response.text.encode("utf-8"), parser=etree.XMLParser(huge_tree=self.huge_tree))
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
         except Exception as e:
             raise requests.ConnectionError("GetUsers GetListItems response failed to parse correctly: " + str(e))
         # TODO: Verify if this works on Sharepoint lists with validation
