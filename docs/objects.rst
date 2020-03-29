@@ -6,7 +6,7 @@ Site
 ====
 The main object of the SharePlum library is Site.
 
-.. py:class:: Site(url [, auth=None, verify_ssl=True, ssl_version='TLSv1'])
+.. py:class:: Site(url [version=Version.v2007, auth=None, authcookie=None, verify_ssl=True, ssl_version='TLSv1', huge_tree=False, timeout=None])
 
     Main Site object used to interact with your SharePoint site.
 
@@ -59,7 +59,7 @@ The List object contains methods for interacting with SharePoint Lists.  Created
 Methods
 -------
 
-.. py:function:: GetListItems([viewname=None, fields=None, query=None, rowlimit=0])
+.. py:function:: GetListItems([view_name=None, fields=None, query=None, row_limit=0])
 
     * viewname - A valid View Name for the current List.
     * fields - Instead of a View we can pass the individual columns we want.
@@ -100,7 +100,41 @@ Methods
 
     Get a list of attachements for the row with the provided ID.
 
+Folder
+======
+
+The Folder object is only usable with the REST API by specifiing site(version=Version.v2013) or greater.  
+
+.. py:class:: Filder(folder_name)
+
+Attributes
+----------
+
+.. py:attribute:: contextinfo
+
+.. py:attribute:: items
+
+.. py:attribute:: files
+
+Methods
+-------
+
+.. py:function:: get_file(file_name)
+
+.. py:function:: upload_file(content, file_name)
+
+.. py:function:: check_out(file_name)
+
+.. py:function:: check_in(file_name, comment)
+
+.. py:function:: delete_folder(relative_url)
+
+.. py:function:: delete_file(file_name)
+
+
 soap
 ====
 
 Helper class to build our SOAP requests. You shouldn't have to use this directly.
+
+

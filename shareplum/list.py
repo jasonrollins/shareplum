@@ -75,7 +75,7 @@ class _List2007:
         }
         return headers
 
-    def _convert_to_internal(self, data):
+    def _mutate_to_internal(self, data):
         # type: (List[Dict]) -> None
         """From 'Column Title' to 'Column_x0020_Title'"""
         for _dict in data:
@@ -84,6 +84,21 @@ class _List2007:
                 if key not in self._disp_cols:
                     raise Exception(key + " not a column in current List.")
                 _dict[self._disp_cols[key]["name"]] = self._sp_type(key, _dict.pop(key))
+
+    def _convert_to_internal(self, data):
+        # type: (List[Dict]) -> None
+        """From 'Column Title' to 'Column_x0020_Title'"""
+        new_data = []
+        for _dict in data:
+            keys = list(_dict.keys())[:]
+            new_dict = dict()
+            for key in keys:
+                if key not in self._disp_cols:
+                    raise Exception(key + " not a column in current List.")
+                new_dict[self._disp_cols[key]["name"]] = self._sp_type(key, _dict[key])
+            new_data.append(new_dict)
+        
+        return new_data
 
     def _convert_to_display(self, data):
         # type: (List[Dict]) -> None
@@ -200,6 +215,7 @@ class _List2007:
 
         # Add query
         if query:
+            modified_query = dict()
             where = etree.Element('Where')
 
             parents = [where]
@@ -222,9 +238,10 @@ class _List2007:
                         value.set("Type", self._disp_cols[field[1]]["type"])
                         value.text = self._sp_type(field[1], field[2])
 
-                query["Where"] = where
+                # query["Where"] = where
+                modified_query["Where"] = where
 
-            soap_request.add_query(query)
+            soap_request.add_query(modified_query)
 
         # Set Row Limit
         soap_request.add_parameter("rowLimit", str(row_limit))
@@ -407,7 +424,7 @@ class _List2007:
             response.raise_for_status()
             raise RuntimeError("Response error: " + str(response.status_code) + ": " + str(response.text))
 
-    def update_list_items(self, data, kind):  # type: (List[Dict[str, str]], str) -> Any
+    def update_list_items(self, data, kind, mutate_data=False):  # type: (List[Dict[str, str]], str) -> Any
         """Update List Items
            kind = 'New', 'Update', or 'Delete'
 
@@ -430,8 +447,13 @@ class _List2007:
         soap_request = Soap("UpdateListItems")
         soap_request.add_parameter("listName", self.list_name)
         if kind != "Delete":
-            self._convert_to_internal(data)
-        soap_request.add_actions(data, kind)
+            if mutate_data:
+                spdata = data
+                self._mutate_to_internal(spdata)
+            else:
+                spdata = self._convert_to_internal(data)
+
+        soap_request.add_actions(spdata, kind)
         self.last_request = str(soap_request)
 
         # Send Request
