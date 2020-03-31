@@ -41,23 +41,31 @@ class ListTestCase(unittest.TestCase):
         print("Update List")
         self.list = self.site.List(self.server["test_list"])
         my_data = data=[{'Title': 'First Row!'},
-                        {'Title': 'Another One!'}]
+                        {'Title': 'Another One!'},
+                        {'Title': 'Thrid Row'}]
         self.list.UpdateListItems(data=my_data, kind='New')
+        self.assertEqual(len(self.list.get_list_items(row_limit=5)), 3)
+
+    def test_d_delete_row(self):
+        print("Delete Row")
+        self.list = self.site.List(self.server["test_list"])
+        my_data = data=[1]
+        self.list.UpdateListItems(data=my_data, kind='Delete')
         self.assertEqual(len(self.list.get_list_items(row_limit=2)), 2)
 
-    def test_d_get_view(self):
+    def test_e_get_view(self):
         print("Get View")
         self.list = self.site.List(self.server["test_list"])
         self.assertEqual(len(self.list.GetListItems("All Items")), 2)
 
-    def test_e_query_list(self):
+    def test_f_query_list(self):
         print('Test Query')
         self.list = self.site.List(self.server["test_list"])
-        query = {'Where': [('Eq', 'Title', 'First Row!')]}
+        query = {'Where': [('Eq', 'Title', 'Another One!')]}
         items = self.list.GetListItems(fields=['Title'], query=query) 
         self.assertEqual(len(items), 1)
 
-    def test_f_users(self):
+    def test_g_users(self):
         print("Test Users")
         self.list = self.site.List(self.server["test_list"])
         self.assertIsNotNone(self.list.users)

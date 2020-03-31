@@ -452,6 +452,8 @@ class _List2007:
                 self._mutate_to_internal(spdata)
             else:
                 spdata = self._convert_to_internal(data)
+        else:
+            spdata = data
 
         soap_request.add_actions(spdata, kind)
         self.last_request = str(soap_request)
