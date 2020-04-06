@@ -111,3 +111,14 @@ class _Folder():
     def get_file(self, file_name):
         response = self._session.get(self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/$value")
         return response.text
+
+    
+    def download_file(self, source_file_name, dest_file_name):
+        """
+            downloads source_file_name from the sharepiont folder and saves it to dest_file_name
+        """
+        response = self._session.get(self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{source_file_name}')/$value")
+        if response.status_code == 200:
+            with open (dest_file_name, 'wb') as f:
+                f.write(response.content)
+
