@@ -19,10 +19,14 @@ Files
 You can upload a file to the folder with upload_file() ::
 
     folder.upload_file('Hello', 'new.txt')
-    
+
 Download a file ::
 
-    folder.get_file('new.txt')
+    folder.download_file('source.txt', 'destination.txt')
+    
+Read a text file ::
+
+    folder.read_txt_file('new.txt')
 
 Check out a file ::
 

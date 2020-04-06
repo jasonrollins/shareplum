@@ -108,7 +108,7 @@ class _Folder():
         
         return None
     
-    def get_file(self, file_name):
+    def read_txt_file(self, file_name):
         response = self._session.get(self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/$value")
         return response.text
 
