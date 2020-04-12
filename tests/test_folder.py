@@ -30,5 +30,5 @@ class FolderTestCase(unittest.TestCase):
         print("Testing Folder")
         self.folder = self.site.Folder(self.server["test_folder"])
         self.folder.upload_file("Hello", "new.txt")
-        self.assertEqual(self.folder.get_file("new.txt"), "Hello")
+        self.assertEqual(self.folder.read_txt_file("new.txt"), "Hello")
         self.folder.delete_file("new.txt")

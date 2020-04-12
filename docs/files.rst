@@ -20,6 +20,12 @@ You can upload a file to the folder with upload_file() ::
 
     folder.upload_file('Hello', 'new.txt')
 
+or for a binary file ::
+
+    with open(fileName, mode='rb') as file:
+	    fileContent = file.read()
+    folder.upload_file(fileContent, "filename.bin")
+
 Download a file ::
 
     folder.download_file('source.txt', 'destination.txt')

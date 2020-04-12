@@ -15,7 +15,6 @@ from .soap import Soap
 
 # import defusedxml.ElementTree as etree
 
-
 class _List2007:
     """Sharepoint Lists Web Service
        Microsoft Developer Network:

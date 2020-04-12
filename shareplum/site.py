@@ -78,6 +78,7 @@ class _Site2007:
             "Webs": "/_vti_bin/Webs.asmx",
         }  # type: Dict[str, str]
 
+        self.site_info = self.get_site()
         self.users = self.get_users()
         self.version = "2007" # For Debugging
 
@@ -186,6 +187,130 @@ class _Site2007:
         if response.status_code != 200:
             response.raise_for_status()
             raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+
+    def get_form_collection(self, list_name):
+
+        # Build Request
+        soap_request = Soap("GetFormCollection")
+        soap_request.add_parameter("listName", list_name)
+        self.last_request = str(soap_request)
+
+        # Send Request
+        response = self._session.post(
+            url=self._url("Forms"),
+            headers=self._headers("GetFormCollection"),
+            data=str(soap_request).encode("utf-8"),
+            verify=self._verify_ssl,
+            timeout=self.timeout,
+        )
+
+        # Parse Request
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+        else:
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
+            items = envelope[0][0][0][0]
+            data = []
+            for _item in items:
+                data.append({k:v for (k,v) in _item.items()})
+
+            return data
+
+    def get_site(self):
+
+        # Build Request
+        soap_request = Soap("GetSite")
+        soap_request.add_parameter("SiteUrl", self.site_url)
+        self.last_request = str(soap_request)
+
+        # Send Request
+        response = self._session.post(
+            url=self._url("Sites"),
+            headers=self._headers("GetSite"),
+            data=str(soap_request).encode("utf-8"),
+            verify=self._verify_ssl,
+            timeout=self.timeout,
+        )
+
+        # Parse Request
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+        else:
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
+            data = envelope[0][0][0]
+
+            # TODO: Not sure what to do with this, so just return the text
+            return data.text
+
+    def get_list_templates(self):
+
+        # Build Request
+        soap_request = Soap("GetListTemplates")
+        soap_request.add_parameter("GetListTemplates")
+        self.last_request = str(soap_request)
+
+        # Send Request
+        response = self._session.post(
+            url=self._url("Webs"),
+            headers=self._headers("GetListTemplates"),
+            data=str(soap_request).encode("utf-8"),
+            verify=self._verify_ssl,
+            timeout=self.timeout,
+        )
+
+        # Parse Request
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+        else:
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
+            lists = envelope[0][0][0][0]
+            data = []
+            for _list in lists:
+                data.append({k:v for (k,v) in _list.items()})
+
+            return data
+    
+    def get_site_templates(self, lcid="1033"):
+
+        # Build Request
+        soap_request = Soap("GetSiteTemplates")
+        soap_request.add_parameter("LCID", lcid)
+        self.last_request = str(soap_request)
+
+        # Send Request
+        response = self._session.post(
+            url=self._url("Sites"),
+            headers=self._headers("GetSiteTemplates"),
+            data=str(soap_request).encode("utf-8"),
+            verify=self._verify_ssl,
+            timeout=self.timeout,
+        )
+
+        # Parse Request
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+        else:
+            return response
+            envelope = etree.fromstring(response.text.encode("utf-8"),
+                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                                               recover=True))
+            lists = envelope[0][0][1]
+            data = []
+            for _list in lists:
+                data.append({k:v for (k,v) in _list.items()})
+
+            return data
+            
 
     def get_list_collection(self):
         # type: () -> Optional[List[Dict[str, str]]]
@@ -319,6 +444,9 @@ class _Site365(_Site2007):
     def info(self):
         response = self._session.get(self.site_url + "/_api/site")
         data = json.loads(response.text)
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         return data
         
     def Folder(self, folder_name):
@@ -328,36 +456,54 @@ class _Site365(_Site2007):
     
     def _get_form_digest_value(self):
         response = self._session.post(self.site_url + "/_api/contextinfo")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['FormDigestValue']
 
     @property
     def contextinfo(self):
         response = self._session.post(self.site_url + "/_api/contextinfo")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data
     
     @property
     def contenttypes(self):
         response = self._session.get(self.site_url + "/_api/web/contenttypes")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
     
     @property
     def eventreceivers(self):
         response = self._session.get(self.site_url + "/_api/web/eventreceivers")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
     
     @property
     def features(self):
         response = self._session.get(self.site_url + "/_api/web/features")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
     
     @property
     def fields(self):
         response = self._session.get(self.site_url + "/_api/web/fields")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
     
@@ -377,24 +523,36 @@ class _Site365(_Site2007):
     
     def GetUsers(self, row_limit=None):
         response = self._session.get(self.site_url + "/_api/web/siteusers")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
     
     @property
     def groups(self):
         response = self._session.get(self.site_url + "/_api/web/sitegroups")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
     
     @property
     def roleassignments(self):
         response = self._session.get(self.site_url + "/_api/web/roleassignments")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
     
     @property
     def web(self):
         response = self._session.get(self.site_url + "/_api/web")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         data = json.loads(response.text)
         return data['value']
 

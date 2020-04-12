@@ -13,6 +13,10 @@ class _Folder():
     @property
     def contextinfo(self):
         response = self._session.post(self.site_url + "/_api/contextinfo")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+
         data = json.loads(response.text)
         return data
         
@@ -32,6 +36,10 @@ class _Folder():
                                       headers=headers,
                                       data=body,
                                       timeout=self.timeout)
+
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         
         data = json.loads(response.text)
         return data
@@ -48,6 +56,10 @@ class _Folder():
 
             response = self._session.post(url=url,
                                           headers=headers)
+
+            if response.status_code != 200:
+                response.raise_for_status()
+                raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         else:
             print('You must pass the relative folder url to delete a folder')
         
@@ -64,18 +76,30 @@ class _Folder():
 
         response = self._session.post(url=url,
                                         headers=headers)
-        
+
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+
         return None
 
     @property
     def items(self):        
         response = self._session.get(self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/ListItemAllFields")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+
         data = json.loads(response.text)
         return data
     
     @property
     def files(self):        
         response = self._session.get(self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/files")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+
         data = json.loads(response.text)
         return data['value']
     
@@ -88,6 +112,10 @@ class _Folder():
                                       headers=headers,
                                       data=body,
                                       timeout=self.timeout)
+
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         
     def check_out(self, file_name): 
         url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/CheckOut()"
@@ -96,6 +124,10 @@ class _Folder():
         response = self._session.post(url=url,
                                       headers=headers)
         
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+
         return None
     
     def check_in(self, file_name, comment):
@@ -105,11 +137,18 @@ class _Folder():
 
         response = self._session.post(url=url,
                                       headers=headers)
+
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         
         return None
     
     def read_txt_file(self, file_name):
         response = self._session.get(self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/$value")
+        if response.status_code != 200:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         return response.text
 
     
@@ -121,4 +160,6 @@ class _Folder():
         if response.status_code == 200:
             with open (dest_file_name, 'wb') as f:
                 f.write(response.content)
-
+        else:
+            response.raise_for_status()
+            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
