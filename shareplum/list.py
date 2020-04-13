@@ -140,7 +140,14 @@ class _List2007:
                 if self.users and value in self.users["sp"]:
                     return self.users["sp"][value]
                 elif "#" in value:
-                    return value.split("#")[1]
+                    users = []
+                    for i, value in enumerate(value.split(';#')):
+                        if i % 2 == 0:
+                            user = '#%s' % value
+                        else:
+                            user += ';#%s' % value
+                            users.append(user)
+                    return users
                 else:
                     return value
             else:
