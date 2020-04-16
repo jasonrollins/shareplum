@@ -37,7 +37,7 @@ class _Folder():
                                       data=body,
                                       timeout=self.timeout)
 
-        if response.status_code != 200:
+        if response.status_code != 201:
             response.raise_for_status()
             raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
         
@@ -104,13 +104,12 @@ class _Folder():
         return data['value']
     
     def upload_file(self, content, file_name):
-        body = content
         url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/Files/add(url='{file_name}',overwrite=true)"
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
         
         response = self._session.post(url=url,
                                       headers=headers,
-                                      data=body,
+                                      data=content,
                                       timeout=self.timeout)
 
         if response.status_code != 200:
