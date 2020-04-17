@@ -1,8 +1,8 @@
 from shareplum import Site
 from shareplum import Office365
 from shareplum.site import Version
+from .test_settings import TEST_SETTINGS
 import unittest
-import json
 import os
 
 # Edit test_server.json file to setup SharePoint Test Server
@@ -12,17 +12,14 @@ import os
 class SiteTestCase(unittest.TestCase):
 
     def setUp(self):
-        with open("test_server.json") as f:
-            self.server = json.load(f)
-
-        if self.server["version"] in ["2014", "2016", "2019", "365"]:
+        if TEST_SETTINGS["version"] in ["2014", "2016", "2019", "365"]:
             version=Version.v2016
         else:
             version=Version.v2007
 
-        authcookie = Office365(self.server["server_url"], username=self.server["username"], password=os.environ.get('TEST_PASSWORD')).GetCookies()
-        self.site = Site(self.server["site_url"], version=version, authcookie=authcookie)
-        self.test_list = self.server["test_list"]
+        authcookie = Office365(TEST_SETTINGS["server_url"], username=TEST_SETTINGS["username"], password=os.environ.get('TEST_PASSWORD')).GetCookies()
+        self.site = Site(TEST_SETTINGS["site_url"], version=version, authcookie=authcookie)
+        self.test_list = TEST_SETTINGS["test_list"]
 
     def tearDown(self):
         self.site._session.close()
