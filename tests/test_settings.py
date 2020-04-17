@@ -1,5 +1,5 @@
 try:
-    from .lodcal_test_settings import TEST_SETTINGS
+    from .local_test_settings import TEST_SETTINGS
 except ImportError:
     TEST_SETTINGS = {
         "server_url": "https://jrollins.sharepoint.com",
