@@ -71,6 +71,19 @@ Contribute
 - `Issue Tracker <http://github.com/jasonrollins/shareplum/issues>`_
 - `Source Code <http://github.com/jasonrollins/shareplum>`_
 
+Unit Tests
+^^^^^^^^^^
+
+This package uses python unittest.
+To run the unit tests, first copy tests/test_settings.py as tests/local_test_seetings.py and edit the contents to point at your sharepoint.
+Second export your sharepoint password as an environment variable 'TEST_PASSWORD'
+Then from the root folder run:
+
+::
+
+    python -m unittest disover  # all tests
+    python -m unittest tests.test_site  # all site tests
+
 License
 -------
 
