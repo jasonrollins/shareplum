@@ -37,7 +37,7 @@ class _Folder():
                                       data=body,
                                       timeout=self.timeout)
 
-        if response.status_code != 201:
+        if response.status_code in [200, 201]:
             response.raise_for_status()
             raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
 
