@@ -28,12 +28,8 @@ or for a binary file ::
 
 Download a file ::
 
-    folder.download_file('source.txt', 'destination.txt')
+    folder.get_file('source.txt', 'destination.txt')
     
-Read a text file ::
-
-    folder.read_txt_file('new.txt')
-
 Check out a file ::
 
     folder.check_out('new.txt')

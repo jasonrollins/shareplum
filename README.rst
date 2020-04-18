@@ -43,7 +43,7 @@ Access REST API
     site = Site('https://abc.sharepoint.com/sites/MySharePointSite/', version=Version.v2016, authcookie=authcookie)
     folder = site.Folder('Shared Documents/This Folder')
     folder.upload_file('Hello', 'new.txt')
-    folder.read_txt_file('new.txt')
+    folder.get_file('new.txt')
     folder.check_out('new.txt')
     folder.check_in('new.txt', "My check-in comment")
     folder.delete_file('new.txt')
