@@ -4,10 +4,11 @@ from typing import List
 from typing import Optional
 
 import requests
+from requests.packages.urllib3.util.retry import Retry
+from requests_toolbelt import SSLAdapter
 from lxml import etree
 # import defusedxml.ElementTree as etree
 import json
-from requests_toolbelt import SSLAdapter
 
 from .list import _List2007, _List365
 from .folder import _Folder
@@ -39,9 +40,21 @@ class _Site2007:
         self.site_url = site_url
         self._verify_ssl = verify_ssl
 
+        retry = Retry(total=5,
+                      read=5,
+                      connect=5,
+                      backoff_factor=0.3,
+                      status_forcelist=[500, 502, 503, 504])
+
+        http_adaptor = requests.adapters.HTTPAdapter(max_retries=retry)
+        https_adaptor = http_adaptor
+
         self._session = requests.Session()
         if ssl_version is not None:
-            self._session.mount("https://", SSLAdapter(ssl_version))
+            https_adaptor = SSLAdapter(ssl_version, max_retries)
+
+        self._session.mount("https://", https_adaptor)
+        self._session.mount("http://", http_adaptor)
 
         self._session.headers.update({"user-agent": "shareplum/%s" % __version__})
 
