@@ -1,3 +1,4 @@
+import os
 try:
     from .local_test_settings import TEST_SETTINGS
 except ImportError:
@@ -9,3 +10,5 @@ except ImportError:
         "test_list": "BlahTestList123",
         "test_folder": "Shared Documents/This Folder"
     }
+TEST_PASSWORD = os.environ.get('TEST_PASSWORD')
+assert TEST_PASSWORD, "TEST_PASSWORD environment variable not set."

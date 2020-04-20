@@ -1,5 +1,6 @@
-import requests
+from .request_helper import get, post
 import json
+
 
 class _Folder():
     def __init__(self, session, folder_name, url):
@@ -12,12 +13,8 @@ class _Folder():
 
     @property
     def contextinfo(self):
-        response = self._session.post(self.site_url + "/_api/contextinfo")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-
-        data = json.loads(response.text)
+        response = post(self._session, self.site_url + "/_api/contextinfo")
+        data = response.json()
         return data
 
     def _create_folder(self):
@@ -32,17 +29,9 @@ class _Folder():
                    'Content-Type': 'application/json;odata=verbose',
                    'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
-        response = self._session.post(url=url,
-                                      headers=headers,
-                                      data=body,
-                                      timeout=self.timeout)
+        response = post(self._session, url=url, headers=headers, data=body, timeout=self.timeout)
 
-        if response.status_code not in [200, 201]:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-
-        data = json.loads(response.text)
-        return data
+        return response.json()
 
     def delete_folder(self, relative_url):
         if relative_url == self.folder_name:
@@ -54,102 +43,53 @@ class _Folder():
                        'Content-Type': 'application/json;odata=verbose',
                        'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
-            response = self._session.post(url=url,
-                                          headers=headers)
-
-            if response.status_code != 200:
-                response.raise_for_status()
-                raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+            post(self._session, url=url, headers=headers)
         else:
             print('You must pass the relative folder url to delete a folder')
-
-        return None
 
     def delete_file(self, file_name):
         url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')"
 
         headers = {'Accept': 'application/json;odata=verbose',
-                    'If-Match': '*',
-                    'X-HTTP-Method': 'DELETE',
-                    'Content-Type': 'application/json;odata=verbose',
-                    'X-RequestDigest': self.contextinfo['FormDigestValue']}
+                   'If-Match': '*',
+                   'X-HTTP-Method': 'DELETE',
+                   'Content-Type': 'application/json;odata=verbose',
+                   'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
-        response = self._session.post(url=url,
-                                        headers=headers)
-
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-
-        return None
+        post(self._session, url=url, headers=headers)
 
     @property
     def items(self):
-        response = self._session.get(self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/ListItemAllFields")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-
-        data = json.loads(response.text)
-        return data
+        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/ListItemAllFields")
+        return response.json()
 
     @property
     def files(self):
-        response = self._session.get(self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/files")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-
-        data = json.loads(response.text)
-        return data['value']
+        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/files")
+        return response.json()['value']
 
     @property
     def folders(self):
-        response = self._session.get(self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/folders")
-        response.raise_for_status()
+        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/folders")
         return [entry['Name'] for entry in response.json()['value']]
 
     def upload_file(self, content, file_name):
         url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/Files/add(url='{file_name}',overwrite=true)"
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
-        response = self._session.post(url=url,
-                                      headers=headers,
-                                      data=content,
-                                      timeout=self.timeout)
-
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+        post(self._session, url=url, headers=headers, data=content, timeout=self.timeout)
 
     def check_out(self, file_name):
         url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/CheckOut()"
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
-        response = self._session.post(url=url,
-                                      headers=headers)
-
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-
-        return None
+        post(self._session, url=url, headers=headers)
 
     def check_in(self, file_name, comment):
         url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/CheckIn(comment='{comment}',checkintype=0)"
-
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
-
-        response = self._session.post(url=url,
-                                      headers=headers)
-
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-
-        return None
+        post(self._session, url=url, headers=headers)
 
     def get_file(self, file_name):
-        response = self._session.get(self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/$value")
-        response.raise_for_status()
+        response = get(self._session, self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/$value")
         return response.content
