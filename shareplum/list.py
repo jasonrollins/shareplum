@@ -7,6 +7,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from .request_helper import post
 import requests
 import json
 from lxml import etree
@@ -14,6 +15,7 @@ from lxml import etree
 from .soap import Soap
 
 # import defusedxml.ElementTree as etree
+
 
 class _List2007:
     """Sharepoint Lists Web Service
@@ -96,7 +98,7 @@ class _List2007:
                     raise Exception(key + " not a column in current List.")
                 new_dict[self._disp_cols[key]["name"]] = self._sp_type(key, _dict[key])
             new_data.append(new_dict)
-        
+
         return new_data
 
     def _convert_to_display(self, data):
@@ -254,34 +256,30 @@ class _List2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Lists"),
-            headers=self._headers("GetListItems"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Lists"),
+                        headers=self._headers("GetListItems"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
         # Parse Response
         # TODO: Verify if this works with Sharepoint lists with validation
-        if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            listitems = envelope[0][0][0][0][0]
-            data = []
-            for row in listitems:
-                # Strip the 'ows_' from the beginning with key[4:]
-                data.append({key[4:]: value for (key, value) in row.items() if key[4:] in viewfields})
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        listitems = envelope[0][0][0][0][0]
+        data = []
+        for row in listitems:
+            # Strip the 'ows_' from the beginning with key[4:]
+            data.append({key[4:]: value for (key, value) in row.items() if key[4:] in viewfields})
 
-            self._convert_to_display(data)
+        self._convert_to_display(data)
 
-            if debug:
-                return response
-            else:
-                return data
-        else:
+        if debug:
             return response
+        else:
+            return data
 
     def get_list(self):  # type: () -> None
         """Get Info on Current List
@@ -296,26 +294,21 @@ class _List2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Lists"),
-            headers=self._headers("GetList"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Lists"),
+                        headers=self._headers("GetList"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
         # Parse Response
-        if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True)) # type: etree.ElementTree
-            (fields, regional_settings, server_settings) = self.parse_list_envelope(envelope)
-            self.fields += fields
-            self.regional_settings.update(regional_settings)
-            self.server_settings.update(server_settings)
-
-        else:
-            raise Exception("ERROR:", response.status_code, response.text)
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))  # type: etree.ElementTree
+        (fields, regional_settings, server_settings) = self.parse_list_envelope(envelope)
+        self.fields += fields
+        self.regional_settings.update(regional_settings)
+        self.server_settings.update(server_settings)
 
     @staticmethod
     def parse_list_envelope(envelope):
@@ -369,27 +362,22 @@ class _List2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Views"),
-            headers=self._headers("GetView"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Views"),
+                        headers=self._headers("GetView"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
         # Parse Response
-        if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True)) # type: etree.ElementTree
-            # TODO: Fix me? Should this use XPath too?
-            view = envelope[0][0][0][0]
-            info = {key: value for (key, value) in view.items()}
-            fields = [x.items()[0][1] for x in view[1]]
-            return {"info": info, "fields": fields}
-
-        else:
-            raise Exception("ERROR:", response.status_code, response.text)
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))  # type: etree.ElementTree
+        # TODO: Fix me? Should this use XPath too?
+        view = envelope[0][0][0][0]
+        info = {key: value for (key, value) in view.items()}
+        fields = [x.items()[0][1] for x in view[1]]
+        return {"info": info, "fields": fields}
 
     def get_view_collection(self):  # type: () -> Optional[Dict[str, Dict[str, str]]]
         """Get Views for Current List
@@ -404,31 +392,24 @@ class _List2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Views"),
-            headers=self._headers("GetViewCollection"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Views"),
+                        headers=self._headers("GetViewCollection"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
-        # Parse Response
-        if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            views = envelope[0][0][0][0]
-            data = []
-            for row in views.getchildren():
-                data.append({key: value for (key, value) in row.items()})
-            view = {}
-            for row in data:
-                view[row["DisplayName"]] = row
-            return view
-
-        else:
-            response.raise_for_status()
-            raise RuntimeError("Response error: " + str(response.status_code) + ": " + str(response.text))
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        views = envelope[0][0][0][0]
+        data = []
+        for row in views.getchildren():
+            data.append({key: value for (key, value) in row.items()})
+        view = {}
+        for row in data:
+            view[row["DisplayName"]] = row
+        return view
 
     def update_list_items(self, data, kind, mutate_data=False):  # type: (List[Dict[str, str]], str) -> Any
         """Update List Items
@@ -465,30 +446,26 @@ class _List2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Lists"),
-            headers=self._headers("UpdateListItems"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Lists"),
+                        headers=self._headers("UpdateListItems"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
         # Parse Response
-        if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            # TODO: Fix me
-            results = envelope[0][0][0][0]
-            data_out = {}  # type: Dict
-            for result in results:
-                if result.text != "0x00000000" and result[0].text != "0x00000000":
-                    data_out[result.attrib["ID"]] = (result[0].text, result[1].text)
-                else:
-                    data_out[result.attrib["ID"]] = result[0].text
-            return data_out
-        else:
-            return response
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        # TODO: Fix me
+        results = envelope[0][0][0][0]
+        data_out = {}  # type: Dict
+        for result in results:
+            if result.text != "0x00000000" and result[0].text != "0x00000000":
+                data_out[result.attrib["ID"]] = (result[0].text, result[1].text)
+            else:
+                data_out[result.attrib["ID"]] = result[0].text
+        return data_out
 
     def get_attachment_collection(self, _id):  # type: (str) -> Any
         """Get Attachments for given List Item ID"""
@@ -500,27 +477,23 @@ class _List2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Lists"),
-            headers=self._headers("GetAttachmentCollection"),
-            data=str(soap_request).encode("utf-8"),
-            verify=False,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Lists"),
+                        headers=self._headers("GetAttachmentCollection"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=False,
+                        timeout=self.timeout)
 
         # Parse Request
-        if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            # TODO: Fix this
-            attaches = envelope[0][0][0][0]
-            attachments = []
-            for attachment in attaches.getchildren():
-                attachments.append(attachment.text)
-            return attachments
-        else:
-            return response
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        # TODO: Fix this
+        attaches = envelope[0][0][0][0]
+        attachments = []
+        for attachment in attaches.getchildren():
+            attachments.append(attachment.text)
+        return attachments
 
     # Legacy API
     GetList = get_list
@@ -533,43 +506,35 @@ class _List2007:
 
 class _List365(_List2007):
     def __init__(self,
-        session,  # type: requests.Session
-        list_name,  # type: str
-        url,  # type: Callable[[str], str]
-        verify_ssl,  # type: bool
-        users,  # type: Optional[Dict]
-        huge_tree,  # type: bool
-        timeout,  # type: Optional[int]
-        exclude_hidden_fields=False,  # type: bool
-        site_url=None
-    ):
+                 session,  # type: requests.Session
+                 list_name,  # type: str
+                 url,  # type: Callable[[str], str]
+                 verify_ssl,  # type: bool
+                 users,  # type: Optional[Dict]
+                 huge_tree,  # type: bool
+                 timeout,  # type: Optional[int]
+                 exclude_hidden_fields=False,  # type: bool
+                 site_url=None):
         super().__init__(session, list_name, url, verify_ssl, users, huge_tree, timeout, exclude_hidden_fields, site_url)
         self.site_url = site_url
         self.schema = self._get_schema()
         self.version = "v365"
-    
+
     def _get_schema(self):
-        
         url = self.site_url + f"/_api/lists/getbytitle('{self.list_name}')/RenderListDataAsStream"
 
         body = json.dumps({"parameters": {"RenderOptions": 4}})
-        
-        
+
         headers = {'Accept': 'application/json;odata=verbose',
                    'Content-Type': 'application/json;odata=verbose',
                    'X-RequestDigest': self.contextinfo['FormDigestValue']}
-        
-        response = self._session.post(url=url,
-                                      headers=headers,
-                                      data=body,
-                                      timeout=self.timeout)
-        
-        data = json.loads(response.text)
-        return data
-        
+
+        response = post(self._session, url=url, headers=headers, data=body, timeout=self.timeout)
+        return response.json()
+
     @property
     def contextinfo(self):
-        response = self._session.post(self.site_url + "/_api/contextinfo")
+        response = post(self._session, self.site_url + "/_api/contextinfo")
         data = json.loads(response.text)
         return data
 
@@ -590,17 +555,12 @@ class _List365(_List2007):
         update_data['EnforceUniqueValues'] = unique
         update_data['StaticName'] = static_name
         body = json.dumps(update_data)
-        
+
         url = self.site_url + f"/_api/lists/getbytitle('{self.list_name}')/Fields"
-        
+
         headers = {'Accept': 'application/json;odata=verbose',
                    'Content-Type': 'application/json;odata=verbose',
                    'X-RequestDigest': self.contextinfo['FormDigestValue']}
-        
-        response = self._session.post(url=url,
-                                      headers=headers,
-                                      data=body,
-                                      timeout=self.timeout)
-        
-        data = json.loads(response.text)
-        return data
+
+        response = post(self._session, url=url, headers=headers, data=body, timeout=self.timeout)
+        return response.json()

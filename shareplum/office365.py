@@ -3,6 +3,7 @@ from typing import Optional
 import requests
 from lxml import etree
 from xml.sax.saxutils import escape
+from .request_helper import post
 
 # import defusedxml.ElementTree as etree
 
@@ -62,7 +63,7 @@ class Office365:
         # headers = {"accept": "application/json;odata=verbose"}
 
         # response = requests.post(url, body, headers=headers)
-        response = requests.post(url, body)
+        response = post(requests, url, data=body)
 
         xmldoc = etree.fromstring(response.content)
 
@@ -72,11 +73,11 @@ class Office365:
         if token is not None:
             return token.text
         else:
-          message = xmldoc.findall('.//{http://schemas.microsoft.com/Passport/SoapServices/SOAPFault}text')
-          if len(message) < 1:
-            raise Exception('Error authenticating against Office 365. Was not able to find an error code. Here is '
-                    'the SOAP response from Office 365', response.content)
-          raise Exception('Error authenticating against Office 365. Error from Office 365:', message[0].text)
+            message = xmldoc.findall('.//{http://schemas.microsoft.com/Passport/SoapServices/SOAPFault}text')
+            if len(message) < 1:
+                raise Exception('Error authenticating against Office 365. Was not able to find an error code. Here is '
+                                'the SOAP response from Office 365', response.content)
+            raise Exception('Error authenticating against Office 365. Error from Office 365:', message[0].text)
 
     def get_cookies(self):
         # type: () -> requests.cookies.RequestsCookieJar
@@ -86,7 +87,7 @@ class Office365:
         """
         sectoken = self.get_security_token(self.username, self.password)
         url = self.share_point_site + "/_forms/default.aspx?wa=wsignin1.0"
-        response = requests.post(url, data=sectoken)
+        response = post(requests, url, data=sectoken)
         return response.cookies
 
     # Legacy API

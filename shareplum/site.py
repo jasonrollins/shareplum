@@ -8,14 +8,15 @@ from requests.packages.urllib3.util.retry import Retry
 from requests_toolbelt import SSLAdapter
 from lxml import etree
 # import defusedxml.ElementTree as etree
-import json
 
+from .request_helper import get, post
 from .list import _List2007, _List365
 from .folder import _Folder
 from .soap import Soap
 from .version import __version__
 
 from enum import Enum
+
 
 # SharePoint Versions
 class Version(Enum):
@@ -26,17 +27,17 @@ class Version(Enum):
     v2019 = 5
     v365 = 6
 
+
 class _Site2007:
 
     def __init__(self,
-        site_url,  # type: str
-        auth=None,  # type: Optional[Any]
-        authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
-        verify_ssl=True,  # type: bool
-        ssl_version=None,  # type: Optional[float]
-        huge_tree=False,  # type: bool
-        timeout=None,  # type: Optional[int]
-    ):
+                 site_url,  # type: str
+                 auth=None,  # type: Optional[Any]
+                 authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
+                 verify_ssl=True,  # type: bool
+                 ssl_version=None,  # type: Optional[float]
+                 huge_tree=False,  # type: bool
+                 timeout=None):  # type: Optional[int]
         self.site_url = site_url
         self._verify_ssl = verify_ssl
 
@@ -51,7 +52,7 @@ class _Site2007:
 
         self._session = requests.Session()
         if ssl_version is not None:
-            https_adaptor = SSLAdapter(ssl_version, max_retries)
+            https_adaptor = SSLAdapter(ssl_version, max_retries=retry)
 
         self._session.mount("https://", https_adaptor)
         self._session.mount("http://", http_adaptor)
@@ -93,7 +94,7 @@ class _Site2007:
 
         self.site_info = self.get_site()
         self.users = self.get_users()
-        self.version = "2007" # For Debugging
+        self.version = "2007"  # For Debugging
 
     def _url(self, service):
         # type: (str) -> str
@@ -164,19 +165,14 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Lists"),
-            headers=self._headers("AddList"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Lists"),
+                        headers=self._headers("AddList"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
-        # Parse Request
-        if response == 200:
-            return response.text
-        else:
-            return response
+        return response.text
 
     def delete_list(self, list_name):
         # type: (str) -> Optional[str]
@@ -188,18 +184,12 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Lists"),
-            headers=self._headers("DeleteList"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
-
-        # Parse Request
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+        post(self._session,
+             url=self._url("Lists"),
+             headers=self._headers("DeleteList"),
+             data=str(soap_request).encode("utf-8"),
+             verify=self._verify_ssl,
+             timeout=self.timeout)
 
     def get_form_collection(self, list_name):
 
@@ -209,28 +199,22 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Forms"),
-            headers=self._headers("GetFormCollection"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Forms"),
+                        headers=self._headers("GetFormCollection"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
-        # Parse Request
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        else:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            items = envelope[0][0][0][0]
-            data = []
-            for _item in items:
-                data.append({k:v for (k,v) in _item.items()})
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        items = envelope[0][0][0][0]
+        data = []
+        for _item in items:
+            data.append({k: v for (k, v) in _item.items()})
 
-            return data
+        return data
 
     def get_site(self):
 
@@ -240,26 +224,20 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Sites"),
-            headers=self._headers("GetSite"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Sites"),
+                        headers=self._headers("GetSite"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
-        # Parse Request
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        else:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            data = envelope[0][0][0]
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        data = envelope[0][0][0]
 
-            # TODO: Not sure what to do with this, so just return the text
-            return data.text
+        # TODO: Not sure what to do with this, so just return the text
+        return data.text
 
     def get_list_templates(self):
 
@@ -269,29 +247,23 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Webs"),
-            headers=self._headers("GetListTemplates"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Webs"),
+                        headers=self._headers("GetListTemplates"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
-        # Parse Request
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        else:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            lists = envelope[0][0][0][0]
-            data = []
-            for _list in lists:
-                data.append({k:v for (k,v) in _list.items()})
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        lists = envelope[0][0][0][0]
+        data = []
+        for _list in lists:
+            data.append({k: v for (k, v) in _list.items()})
 
-            return data
-    
+        return data
+
     def get_site_templates(self, lcid="1033"):
 
         # Build Request
@@ -300,30 +272,23 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Sites"),
-            headers=self._headers("GetSiteTemplates"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Sites"),
+                        headers=self._headers("GetSiteTemplates"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
-        # Parse Request
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        else:
-            return response
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            lists = envelope[0][0][1]
-            data = []
-            for _list in lists:
-                data.append({k:v for (k,v) in _list.items()})
+        return response
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        lists = envelope[0][0][1]
+        data = []
+        for _list in lists:
+            data.append({k: v for (k, v) in _list.items()})
 
-            return data
-            
+        return data
 
     def get_list_collection(self):
         # type: () -> Optional[List[Dict[str, str]]]
@@ -333,34 +298,28 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("SiteData"),
-            headers=self._headers("GetListCollection"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("SiteData"),
+                        headers=self._headers("GetListCollection"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
-        # Parse Response
-        if response.status_code == 200:
-            envelope = etree.fromstring(response.text.encode("utf-8"),
-                                        parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
-            # TODO: Verify if this works on Sharepoint lists with validation
-            lists = envelope[0][0][1]
-            data = []
-            for _list in lists:
-                _list_data = {}
-                for item in _list:
-                    key = item.tag.replace("{http://schemas.microsoft.com/sharepoint/soap/}", "")
-                    value = item.text
-                    _list_data[key] = value
-                data.append(_list_data)
+        envelope = etree.fromstring(response.text.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        # TODO: Verify if this works on Sharepoint lists with validation
+        lists = envelope[0][0][1]
+        data = []
+        for _list in lists:
+            _list_data = {}
+            for item in _list:
+                key = item.tag.replace("{http://schemas.microsoft.com/sharepoint/soap/}", "")
+                value = item.text
+                _list_data[key] = value
+            data.append(_list_data)
 
-            return data
-        else:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
+        return data
 
     def get_users(self, rowlimit=0):
         # type: (int) -> Optional[Dict[str, Dict[str, str]]]
@@ -377,23 +336,18 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = self._session.post(
-            url=self._url("Lists"),
-            headers=self._headers("GetListItems"),
-            data=str(soap_request).encode("utf-8"),
-            verify=self._verify_ssl,
-            timeout=self.timeout,
-        )
+        response = post(self._session,
+                        url=self._url("Lists"),
+                        headers=self._headers("GetListItems"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
 
         # Parse Response
-        if response.status_code != 200:
-            raise requests.ConnectionError(
-                "GetUsers GetListItems request failed - status code: " + str(response.status_code)
-            )
         try:
             envelope = etree.fromstring(response.text.encode("utf-8"),
                                         parser=etree.XMLParser(huge_tree=self.huge_tree,
-                                                               recover=True))
+                                        recover=True))
         except Exception as e:
             raise requests.ConnectionError("GetUsers GetListItems response failed to parse correctly: " + str(e))
         # TODO: Verify if this works on Sharepoint lists with validation
@@ -411,7 +365,7 @@ class _Site2007:
     # SharePoint Method Objects
     # Not the best name as it could clash with the built-in list()
     def list(self, list_name, exclude_hidden_fields=False):
-        # type: (str, bool) -> _List
+        # type: (str, bool) -> _List2007
         """Sharepoint Lists Web Service
            Microsoft Developer Network:
            The Lists Web service provides methods for working
@@ -427,7 +381,7 @@ class _Site2007:
             self.huge_tree,
             self.timeout,
             exclude_hidden_fields=exclude_hidden_fields,
-            site_url = self.site_url,
+            site_url=self.site_url,
         )
 
     # Legacy API
@@ -437,142 +391,98 @@ class _Site2007:
     DeleteList = delete_list
     AddList = add_list
 
+
 class _Site365(_Site2007):
     def __init__(self,
-        site_url,  # type: str
-        auth=None,  # type: Optional[Any]
-        authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
-        verify_ssl=True,  # type: bool
-        ssl_version=None,  # type: Optional[float]
-        huge_tree=False,  # type: bool
-        timeout=None,  # type: Optional[int]
-    ):
+                 site_url,  # type: str
+                 auth=None,  # type: Optional[Any]
+                 authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
+                 verify_ssl=True,  # type: bool
+                 ssl_version=None,  # type: Optional[float]
+                 huge_tree=False,  # type: bool
+                 timeout=None):  # type: Optional[int]
         super().__init__(site_url, auth, authcookie, verify_ssl, ssl_version, huge_tree, timeout)
 
         self._session.headers.update({'Accept': 'application/json',
                                       'Content-Type': 'application/json;odata=nometadata'})
-        self.version="v365"
+        self.version = "v365"
 
     @property
     def info(self):
-        response = self._session.get(self.site_url + "/_api/site")
-        data = json.loads(response.text)
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        return data
-        
+        response = get(self._session, self.site_url + "/_api/site")
+        return response.json()
+
     def Folder(self, folder_name):
         """Sharepoint Folder Web Service
         """
         return _Folder(self._session, folder_name, self.site_url)
-    
+
     def _get_form_digest_value(self):
-        response = self._session.post(self.site_url + "/_api/contextinfo")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['FormDigestValue']
+        response = post(self._session, self.site_url + "/_api/contextinfo")
+        return response.json()['FormDigestValue']
 
     @property
     def contextinfo(self):
-        response = self._session.post(self.site_url + "/_api/contextinfo")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data
-    
+        response = post(self._session, self.site_url + "/_api/contextinfo")
+        return response.json()
+
     @property
     def contenttypes(self):
-        response = self._session.get(self.site_url + "/_api/web/contenttypes")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
-    
+        response = get(self._session, self.site_url + "/_api/web/contenttypes")
+        return response.json()['value']
+
     @property
     def eventreceivers(self):
-        response = self._session.get(self.site_url + "/_api/web/eventreceivers")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
-    
+        response = get(self._session, self.site_url + "/_api/web/eventreceivers")
+        return response.json()['value']
+
     @property
     def features(self):
-        response = self._session.get(self.site_url + "/_api/web/features")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
-    
+        response = get(self._session, self.site_url + "/_api/web/features")
+        return response.json()['value']
+
     @property
     def fields(self):
-        response = self._session.get(self.site_url + "/_api/web/fields")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
-    
+        response = get(self._session, self.site_url + "/_api/web/fields")
+        return response.json()['value']
+
     @property
     def lists(self):
         return self.GetListCollection()
-    
+
     # This is a duplicate, but in REST
     # def GetListCollection(self):
-    #     response = self._session.get(self.site_url + "/_api/web/lists")
+    #     response = get(self._session, self.site_url + "/_api/web/lists")
     #     data = json.loads(response.text)
     #     return data['value']
-    
+
     @property
     def siteusers(self):
         return self.GetUsers()
-    
+
     def GetUsers(self, row_limit=None):
-        response = self._session.get(self.site_url + "/_api/web/siteusers")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
-    
+        response = get(self._session, self.site_url + "/_api/web/siteusers")
+        return response.json()['value']
+
     @property
     def groups(self):
-        response = self._session.get(self.site_url + "/_api/web/sitegroups")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
-    
+        response = get(self._session, self.site_url + "/_api/web/sitegroups")
+        return response.json()['value']
+
     @property
     def roleassignments(self):
-        response = self._session.get(self.site_url + "/_api/web/roleassignments")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
-    
+        response = get(self._session, self.site_url + "/_api/web/roleassignments")
+        return response.json()['value']
+
     @property
     def web(self):
-        response = self._session.get(self.site_url + "/_api/web")
-        if response.status_code != 200:
-            response.raise_for_status()
-            raise RuntimeError("Response code: " + str(response.status_code) + ", response: " + str(response.text))
-        data = json.loads(response.text)
-        return data['value']
+        response = get(self._session, self.site_url + "/_api/web")
+        return response.json()['value']
 
     # SharePoint Method Objects
     # Not the best name as it could clash with the built-in list()
     def list(self, list_name, exclude_hidden_fields=False):
-        # type: (str, bool) -> _List
+        # type: (str, bool) -> _List365
         """Sharepoint Lists Web Service
            Microsoft Developer Network:
            The Lists Web service provides methods for working
@@ -593,72 +503,69 @@ class _Site365(_Site2007):
 
     # Legacy API
     List = list
-    
 
 
-def Site(
-        site_url,  # type: str
-        version=Version.v2007,
-        auth=None,  # type: Optional[Any]
-        authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
-        verify_ssl=True,  # type: bool
-        ssl_version=None,  # type: Optional[float]
-        huge_tree=False,  # type: bool
-        timeout=None,  # type: Optional[int]
-        ):
+def Site(site_url,  # type: str
+         version=Version.v2007,
+         auth=None,  # type: Optional[Any]
+         authcookie=None,  # type: Optional[requests.cookies.RequestsCookieJar]
+         verify_ssl=True,  # type: bool
+         ssl_version=None,  # type: Optional[float]
+         huge_tree=False,  # type: bool
+         timeout=None):  # type: Optional[int]
 
-        # We ask for the various versions of SharePoint with 2010 as default
-        # Multiple Version are allowed, but only 2010, 2013, and 365 are implemented
-        if version==Version.v2007:
-            return _Site2007(site_url,
-                             auth,
-                             authcookie,
-                             verify_ssl,
-                             ssl_version,
-                             huge_tree,
-                             timeout)
+    # We ask for the various versions of SharePoint with 2010 as default
+    # Multiple Version are allowed, but only 2010, 2013, and 365 are implemented
+    if version == Version.v2007:
+        return _Site2007(site_url,
+                         auth,
+                         authcookie,
+                         verify_ssl,
+                         ssl_version,
+                         huge_tree,
+                         timeout)
 
-        elif version==Version.v2010:
-            return _Site2007(site_url,
-                             auth,
-                             authcookie,
-                             verify_ssl,
-                             ssl_version,
-                             huge_tree,
-                             timeout)
+    elif version == Version.v2010:
+        return _Site2007(site_url,
+                         auth,
+                         authcookie,
+                         verify_ssl,
+                         ssl_version,
+                         huge_tree,
+                         timeout)
 
-        elif version==Version.v2013:
-            return _Site365(site_url,
-                             auth,
-                             authcookie,
-                             verify_ssl,
-                             ssl_version,
-                             huge_tree,
-                             timeout)
+    elif version == Version.v2013:
+        return _Site365(site_url,
+                        auth,
+                        authcookie,
+                        verify_ssl,
+                        ssl_version,
+                        huge_tree,
+                        timeout)
 
-        elif version==Version.v2016:
-            return _Site365(site_url,
-                             auth,
-                             authcookie,
-                             verify_ssl,
-                             ssl_version,
-                             huge_tree,
-                             timeout)
+    elif version == Version.v2016:
+        return _Site365(site_url,
+                        auth,
+                        authcookie,
+                        verify_ssl,
+                        ssl_version,
+                        huge_tree,
+                        timeout)
 
-        elif version==Version.v2019:
-            return _Site365(site_url,
-                             auth,
-                             authcookie,
-                             verify_ssl,
-                             ssl_version,
-                             huge_tree,
-                             timeout)
+    elif version == Version.v2019:
+        return _Site365(site_url,
+                        auth,
+                        authcookie,
+                        verify_ssl,
+                        ssl_version,
+                        huge_tree,
+                        timeout)
 
-        elif version==Version.v365:
-            return _Site365(site_url,
-                             auth,
-                             authcookie,
-                             verify_ssl,
-                             ssl_version,
-                             huge_tree,
-                             timeout)
+    elif version == Version.v365:
+        return _Site365(site_url,
+                        auth,
+                        authcookie,
+                        verify_ssl,
+                        ssl_version,
+                        huge_tree,
+                        timeout)
