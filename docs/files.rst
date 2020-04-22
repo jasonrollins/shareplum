@@ -28,7 +28,7 @@ or for a binary file ::
 
 Download a file ::
 
-    folder.get_file('source.txt', 'destination.txt')
+    folder.get_file('source.txt')
     
 Check out a file ::
 
