@@ -3,11 +3,11 @@ import json
 
 
 class _Folder():
-    def __init__(self, session, folder_name, url):
+    def __init__(self, session, folder_name, url, timeout=None):
         self._session = session
         self.folder_name = folder_name
         self.site_url = url
-        self.timeout = 3
+        self.timeout = timeout
 
         self.info = self._create_folder()
 

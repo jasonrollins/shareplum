@@ -415,7 +415,7 @@ class _Site365(_Site2007):
     def Folder(self, folder_name):
         """Sharepoint Folder Web Service
         """
-        return _Folder(self._session, folder_name, self.site_url)
+        return _Folder(self._session, folder_name, self.site_url, timeout=self.timeout)
 
     def _get_form_digest_value(self):
         response = post(self._session, self.site_url + "/_api/contextinfo")
