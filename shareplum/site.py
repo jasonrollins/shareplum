@@ -37,8 +37,8 @@ class _Site2007:
                  verify_ssl=True,  # type: bool
                  ssl_version=None,  # type: Optional[float]
                  huge_tree=False,  # type: bool
-                 timeout=None,
-                 retry=None):  # type: Optional[int]
+                 timeout=None,  # type: Optional[int]
+                 retry=None):
         self.site_url = site_url
         self._verify_ssl = verify_ssl
 
