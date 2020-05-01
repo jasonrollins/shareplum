@@ -37,15 +37,17 @@ class _Site2007:
                  verify_ssl=True,  # type: bool
                  ssl_version=None,  # type: Optional[float]
                  huge_tree=False,  # type: bool
-                 timeout=None):  # type: Optional[int]
+                 timeout=None,  # type: Optional[int]
+                 retry=None):
         self.site_url = site_url
         self._verify_ssl = verify_ssl
 
-        retry = Retry(total=5,
-                      read=5,
-                      connect=5,
-                      backoff_factor=0.3,
-                      status_forcelist=[500, 502, 503, 504])
+        if retry is None:
+            retry = Retry(total=5,
+                        read=5,
+                        connect=5,
+                        backoff_factor=0.3,
+                        status_forcelist=[500, 502, 503, 504])
 
         http_adaptor = requests.adapters.HTTPAdapter(max_retries=retry)
         https_adaptor = http_adaptor
