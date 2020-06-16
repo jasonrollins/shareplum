@@ -206,7 +206,8 @@ class _List2007:
         if fields:
             # Convert to SharePoint Style Column Names
             for i, val in enumerate(fields):
-                fields[i] = self._disp_cols[val]["name"]
+                if val in self._disp_cols:
+                    fields[i] = self._disp_cols[val]["name"]
             viewfields = fields
             soap_request.add_view_fields(fields)
             # Check for viewname and query
