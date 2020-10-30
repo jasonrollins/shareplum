@@ -8,7 +8,8 @@ except ImportError:
         "site_url": "https://jrollins.sharepoint.com/sites/TestSite",
         "username": "jrollins@jrollins.onmicrosoft.com",
         "test_list": "BlahTestList123",
-        "test_folder": "Shared Documents/This Folder"
+        "test_folder": "Shared Documents/This Folder",
+        "test_folder_apostrophe": "Shared Documents/This' Folder"
     }
 TEST_PASSWORD = os.environ.get('TEST_PASSWORD')
 assert TEST_PASSWORD, "TEST_PASSWORD environment variable not set."

@@ -6,16 +6,21 @@ class _Folder():
     def __init__(self, session, folder_name, url, timeout=None):
         self._session = session
         self.folder_name = folder_name
+        self._escaped_folder_name = self._escape_name(self.folder_name)
         self.site_url = url
         self.timeout = timeout
 
         self.info = self._create_folder()
+        self._escaped_relative_url = self._escape_name(self.info['d']['ServerRelativeUrl'])
 
     @property
     def contextinfo(self):
         response = post(self._session, self.site_url + "/_api/contextinfo")
         data = response.json()
         return data
+
+    def _escape_name(self, name):
+        return name.replace("'", "''")
 
     def _create_folder(self):
         update_data = {}
@@ -35,7 +40,7 @@ class _Folder():
 
     def delete_folder(self, relative_url):
         if relative_url == self.folder_name:
-            url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')"
+            url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_folder_name}')"
 
             headers = {'Accept': 'application/json;odata=verbose',
                        'If-Match': '*',
@@ -48,7 +53,8 @@ class _Folder():
             print('You must pass the relative folder url to delete a folder')
 
     def delete_file(self, file_name):
-        url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')"
+        escaped_file_name = self._escape_name(file_name)
+        url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self._escaped_relative_url}/{escaped_file_name}')"
 
         headers = {'Accept': 'application/json;odata=verbose',
                    'If-Match': '*',
@@ -60,36 +66,40 @@ class _Folder():
 
     @property
     def items(self):
-        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/ListItemAllFields")
+        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_folder_name}')/ListItemAllFields")
         return response.json()
 
     @property
     def files(self):
-        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/files")
+        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_folder_name}')/files")
         return response.json()['value']
 
     @property
     def folders(self):
-        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/folders")
+        response = get(self._session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_folder_name}')/folders")
         return [entry['Name'] for entry in response.json()['value']]
 
     def upload_file(self, content, file_name):
-        url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self.folder_name}')/Files/add(url='{file_name}',overwrite=true)"
+        escaped_file_name = self._escape_name(file_name)
+        url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_folder_name}')/Files/add(url='{escaped_file_name}',overwrite=true)"
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
         post(self._session, url=url, headers=headers, data=content, timeout=self.timeout)
 
     def check_out(self, file_name):
-        url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/CheckOut()"
+        escaped_file_name = self._escape_name(file_name)
+        url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self._escaped_relative_url}/{escaped_file_name}')/CheckOut()"
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
         post(self._session, url=url, headers=headers)
 
     def check_in(self, file_name, comment):
-        url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/CheckIn(comment='{comment}',checkintype=0)"
+        escaped_file_name = self._escape_name(file_name)
+        url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self._escaped_relative_url}/{escaped_file_name}')/CheckIn(comment='{comment}',checkintype=0)"
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
         post(self._session, url=url, headers=headers)
 
     def get_file(self, file_name):
-        response = get(self._session, self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')/$value")
+        escaped_file_name = self._escape_name(file_name)
+        response = get(self._session, self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self._escaped_relative_url}/{escaped_file_name}')/$value")
         return response.content
