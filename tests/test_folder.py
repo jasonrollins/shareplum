@@ -29,3 +29,9 @@ class FolderTestCase(unittest.TestCase):
         self.folder.upload_file("Hello", "new.txt")
         self.assertEqual(self.folder.get_file("new.txt"), b"Hello")
         self.folder.delete_file("new.txt")
+
+        print("Testing Folder and files with apostrophes")
+        self.folder = self.site.Folder(TEST_SETTINGS["test_folder_apostrophe"])
+        self.folder.upload_file("Hello", "new'.txt")
+        self.assertEqual(self.folder.get_file("new'.txt"), b"Hello")
+        self.folder.delete_file("new'.txt")
