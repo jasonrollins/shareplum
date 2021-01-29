@@ -105,7 +105,7 @@ Folder
 
 The Folder object is only usable with the REST API by specifiing site(version=Version.v2013) or greater.  
 
-.. py:class:: Filder(folder_name)
+.. py:class:: Folder(folder_name)
 
 Attributes
 ----------
