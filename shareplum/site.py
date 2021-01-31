@@ -98,6 +98,14 @@ class _Site2007:
         self.users = self.get_users()
         self.version = "2007"  # For Debugging
 
+    def __enter__(self):
+        # type: (_Site2007) -> _Site2007
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        # type: (str, int, TraceBack) -> None
+        self._session.close()
+
     def _url(self, service):
         # type: (str) -> str
         """Full SharePoint Service URL"""
