@@ -411,6 +411,42 @@ class _List2007:
             view[row["DisplayName"]] = row
         return view
 
+    def get_version_collection(self, list_id, item_id, field_name):  # type: () -> List[Dict[str, str]]
+
+        # Build Request
+        soap_request = Soap("GetVersionCollection")
+        soap_request.add_parameter("strlistID", list_id)
+        soap_request.add_parameter("strlistItemID", item_id)
+        soap_request.add_parameter("strFieldName", field_name)
+        self.last_request = str(soap_request)
+
+        # Send Request
+        response = post(self._session,
+                        url=self._url("Lists"),
+                        headers=self._headers("GetVersionCollection"),
+                        data=str(soap_request).encode("utf-8"),
+                        verify=self._verify_ssl,
+                        timeout=self.timeout)
+
+        # fix invalid attribute name: Sharepoints uses the field name as it is,
+        # including whitespaces and special characters, as attribute name
+        # for the Version element. To enable successful parsing, we replace
+        # the attribute name (which we know anyway) by a constant, e.g. field_name
+        content = response.text
+        content = content.replace("Version {field_name}=\"".format(field_name=field_name), "Version field_name=\"")
+
+        envelope = etree.fromstring(content.encode("utf-8"),
+                                    parser=etree.XMLParser(huge_tree=self.huge_tree,
+                                    recover=True))
+        versions = envelope[0][0][0][0]
+        data = []
+        for row in versions.getchildren():
+            data.append({
+                'content': row.attrib['field_name'],
+                'modified': row.attrib['Modified'],
+                'editor': row.attrib['Editor']})
+        return data
+
     def update_list_items(self, data, kind, mutate_data=False):  # type: (List[Dict[str, str]], str) -> Any
         """Update List Items
            kind = 'New', 'Update', or 'Delete'
