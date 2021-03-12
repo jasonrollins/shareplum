@@ -1,3 +1,4 @@
+from requests_ntlm import HttpNtlmAuth
 from shareplum import Site
 from shareplum import Office365
 from shareplum.site import Version
@@ -17,8 +18,12 @@ class SiteTestCase(unittest.TestCase):
         else:
             version = Version.v2007
 
-        authcookie = Office365(TEST_SETTINGS["server_url"], username=TEST_SETTINGS["username"], password=TEST_PASSWORD).GetCookies()
-        self.site = Site(TEST_SETTINGS["site_url"], version=version, authcookie=authcookie)
+        if TEST_SETTINGS["version"] == "365":
+            authcookie = Office365(TEST_SETTINGS["server_url"], username=TEST_SETTINGS["username"], password=TEST_PASSWORD).GetCookies()
+            self.site = Site(TEST_SETTINGS["site_url"], version=version, authcookie=authcookie)
+        else:
+            auth = HttpNtlmAuth(TEST_SETTINGS["username"], TEST_PASSWORD)
+            self.site = Site(TEST_SETTINGS["site_url"], version=version, auth=auth)
         self.test_list = TEST_SETTINGS["test_list"]
 
     def tearDown(self):
