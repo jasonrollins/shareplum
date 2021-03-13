@@ -349,6 +349,8 @@ class _Site2007:
             msg = ("get_users received a 404 for the SOAP request "
                    "even though the URL {} is accessible; this error code in this context means "
                    "the authorization is bad.".format(self._url("Lists")))
+            if hasattr(self._session, 'auth') and hasattr(self._session.auth, 'domain'):
+                msg += " Domain = {}".format(self._session.auth.domain)
             if hasattr(self._session, 'auth') and hasattr(self._session.auth, 'username'):
                 msg += " Username = {}".format(self._session.auth.username)
             raise ShareplumRequestError(msg)
