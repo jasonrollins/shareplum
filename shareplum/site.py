@@ -9,6 +9,7 @@ from requests_toolbelt import SSLAdapter
 from lxml import etree
 # import defusedxml.ElementTree as etree
 
+from .errors import ShareplumRequestError
 from .request_helper import get, post
 from .list import _List2007, _List365
 from .folder import _Folder
@@ -338,12 +339,17 @@ class _Site2007:
         self.last_request = str(soap_request)
 
         # Send Request
-        response = post(self._session,
-                        url=self._url("Lists"),
-                        headers=self._headers("GetListItems"),
-                        data=str(soap_request).encode("utf-8"),
-                        verify=self._verify_ssl,
-                        timeout=self.timeout)
+        response = self._session.post(self._url("Lists"),
+                                      headers=self._headers("GetListItems"),
+                                      data=str(soap_request).encode("utf-8"),
+                                      verify=self._verify_ssl,
+                                      timeout=self.timeout,
+                                      )
+        if response.status_code == 404 and requests.post(self._url("Lists")).status_code == 200:
+            raise ShareplumRequestError("get_users received a 404 for the SOAP request "
+                                        "even though the URL {} is accessible; this error code in this context means "
+                                        "the authorization is bad.".format(self._url("Lists")))
+        response.raise_for_status()
 
         # Parse Response
         try:
