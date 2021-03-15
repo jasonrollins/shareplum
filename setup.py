@@ -36,5 +36,5 @@ setup(
     ],
     keywords=['SharePoint'],
     packages=['shareplum'],
-    install_requires=['lxml', 'requests', 'requests-ntlm', 'requests-toolbelt'],
+    install_requires=['lxml', 'requests', 'requests-ntlm2', 'requests-toolbelt'],
 )
