@@ -192,7 +192,7 @@ class _List2007:
     ):
         # type: (...) -> Optional[Any]
         """Get Items from current list
-           rowlimit defaulted to 0 (unlimited)
+           row_limit defaulted to 0 (unlimited)
         """
 
         # Build Request

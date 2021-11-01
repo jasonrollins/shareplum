@@ -21,7 +21,7 @@ Usage
     auth = HttpNtlmAuth('DIR\\username', 'password')
     site = Site('https://abc.com/sites/MySharePointSite/', auth=auth)
     sp_list = site.List('list name')
-    data = sp_list.GetListItems('All Items', rowlimit=200)
+    data = sp_list.GetListItems('All Items', row_limit=200)
 
 Authenticate to Office365 Sharepoint
 ------------------------------------
@@ -34,7 +34,7 @@ Authenticate to Office365 Sharepoint
     authcookie = Office365('https://abc.sharepoint.com', username='username@abc.com', password='password').GetCookies()
     site = Site('https://abc.sharepoint.com/sites/MySharePointSite/', authcookie=authcookie)
     sp_list = site.List('list name')
-    data = sp_list.GetListItems('All Items', rowlimit=200)
+    data = sp_list.GetListItems('All Items', row_limit=200)
 
 
 Access REST API
