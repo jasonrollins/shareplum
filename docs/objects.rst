@@ -64,7 +64,7 @@ Methods
     * viewname - A valid View Name for the current List.
     * fields - Instead of a View we can pass the individual columns we want.
     * query - A filter we can apply.
-    * rowlimit - Limit the number of rows returned
+    * row_limit - Limit the number of rows returned
 
 .. py:function:: GetList()
 
