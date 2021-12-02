@@ -1,5 +1,7 @@
 from .request_helper import get, post
 import json
+import math
+import uuid
 
 
 class _Folder():
@@ -81,10 +83,32 @@ class _Folder():
 
     def upload_file(self, content, file_name):
         escaped_file_name = self._escape_name(file_name)
-        url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_folder_name}')/Files/add(url='{escaped_file_name}',overwrite=true)"
         headers = {'X-RequestDigest': self.contextinfo['FormDigestValue']}
 
-        post(self._session, url=url, headers=headers, data=content, timeout=self.timeout)
+        file_size = len(content)
+        chunk_size = 262144000
+        if file_size <= chunk_size:
+            url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_folder_name}')/Files/add(url='{escaped_file_name}',overwrite=true)"
+            post(self._session, url=url, headers=headers, data=content, timeout=self.timeout)
+        else:
+            guid = str(uuid.uuid4())
+            offset = int(0)
+            chunks = [
+                *range(0, file_size, chunk_size),
+                file_size
+            ]
+            n_chunks = len(chunks)
+            for i in range(1, n_chunks):
+                print(i)
+                current = content[chunks[(i - 1)]:chunks[i]]
+                if i == 1:
+                    url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_relative_url}')/Files/GetByPathOrAddStub(DecodedUrl='{escaped_file_name}')/StartUpload(uploadId=guid'{guid}')"
+                elif i == (n_chunks - 1):
+                    url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self._escaped_relative_url}/{escaped_file_name}')/FinishUpload(uploadId=guid'{guid}',fileOffset={offset})"
+                else:
+                    url = self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self._escaped_relative_url}/{escaped_file_name}')/ContinueUpload(uploadId=guid'{guid}',fileOffset={offset})"
+                offset += chunks[i]
+                post(self._session, url=url, headers=headers, data=current, timeout=self.timeout)
 
     def check_out(self, file_name):
         escaped_file_name = self._escape_name(file_name)
