@@ -1,6 +1,5 @@
 from .request_helper import get, post
 import json
-import math
 import uuid
 
 
@@ -99,7 +98,6 @@ class _Folder():
             ]
             n_chunks = len(chunks)
             for i in range(1, n_chunks):
-                print(i)
                 current = content[chunks[(i - 1)]:chunks[i]]
                 if i == 1:
                     url = self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{self._escaped_relative_url}')/Files/GetByPathOrAddStub(DecodedUrl='{escaped_file_name}')/StartUpload(uploadId=guid'{guid}')"
