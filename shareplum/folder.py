@@ -103,3 +103,7 @@ class _Folder():
         escaped_file_name = self._escape_name(file_name)
         response = get(self._session, self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self._escaped_relative_url}/{escaped_file_name}')/$value")
         return response.content
+    
+    def get_file_properties(self, file_name):
+        file_properties= get(self._session, self.site_url + f"/_api/web/GetFileByServerRelativeUrl('{self.info['d']['ServerRelativeUrl']}/{file_name}')?/$expand=ListItemAllFields")
+        return file_properties.json()
