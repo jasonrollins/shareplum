@@ -10,7 +10,16 @@ class _Folder():
         self.site_url = url
         self.timeout = timeout
 
-        self.info = self._create_folder()
+        #fetch all the existing folders
+        response = get(session, self.site_url + "/_api/web/folders")
+        existing_folders = {folder['Name'] for folder in response.json()}
+        if not folder_name in existing_folders:
+            #if the folder doesn't exist we create it
+            self.info = self._create_folder()
+        else:
+            #else there is no need to create it
+            response = get(session, self.site_url + f"/_api/web/GetFolderByServerRelativeUrl('{folder_name}')")
+            self.info = {'d' : response.json()}
         self._escaped_relative_url = self._escape_name(self.info['d']['ServerRelativeUrl'])
 
     @property
