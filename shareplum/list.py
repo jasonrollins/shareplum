@@ -204,11 +204,13 @@ class _List2007:
 
         # Add viewFields
         if fields:
+            # Create a copy; do not mutate argument
+            _fields = []
             # Convert to SharePoint Style Column Names
             for i, val in enumerate(fields):
-                fields[i] = self._disp_cols[val]["name"]
-            viewfields = fields
-            soap_request.add_view_fields(fields)
+                _fields.append(self._disp_cols[val]["name"])
+            viewfields = _fields
+            soap_request.add_view_fields(_fields)
             # Check for viewname and query
             if [view_name, query] == [None, None]:
                 # Add a query if the viewname and query are not provided
