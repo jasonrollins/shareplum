@@ -175,7 +175,7 @@ class _List2007:
                 else:
                     raise Exception("%s not a valid Boolean Value, only 'Yes' or 'No'" % value)
             elif self.users and field_type == "User":
-                return self.users["py"][key]
+                return self.users["py"][value]
             else:
                 return value
         except AttributeError:
