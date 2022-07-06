@@ -3,7 +3,7 @@ cffi==1.14.0
 chardet==3.0.4
 cryptography==3.3.2
 idna==2.9
-lxml==4.6.5
+lxml==4.9.1
 ntlm-auth==1.4.0
 pycparser==2.20
 requests==2.23.0
